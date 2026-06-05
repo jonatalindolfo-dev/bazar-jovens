@@ -13,19 +13,17 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue:       #1565C0;
-      --blue-dark:  #0D47A1;
-      --blue-light: #1976D2;
-      --blue-pale:  #E3F2FD;
-      --green:      #2E7D32;
-      --green-light:#388E3C;
-      --red:        #D32F2F;
-      --bg:         #EEF2FF;
-      --card:       #FFFFFF;
-      --text:       #1A1A2E;
-      --muted:      #757575;
-      --shadow:     0 2px 14px rgba(21,101,192,0.13);
-      --radius:     18px;
+      --blue:      #1565C0;
+      --blue-pale: #E3F2FD;
+      --green:     #2E7D32;
+      --whatsapp:  #25D366;
+      --red:       #D32F2F;
+      --bg:        #EEF2FF;
+      --card:      #FFFFFF;
+      --text:      #1A1A2E;
+      --muted:     #757575;
+      --shadow:    0 2px 14px rgba(21,101,192,0.13);
+      --radius:    18px;
     }
 
     html, body {
@@ -93,7 +91,6 @@
       align-items: center;
       gap: 8px;
       box-shadow: var(--shadow);
-      transition: box-shadow .15s;
     }
 
     .item-price {
@@ -150,13 +147,13 @@
       box-shadow: 0 -3px 12px rgba(0,0,0,.16);
       flex-shrink: 0;
     }
-    .total-bar .qty-txt  { color: rgba(255,255,255,.76); font-size: 15px; }
-    .total-bar .val-txt  { color: #fff; font-size: 32px; font-weight: 700; }
+    .total-bar .qty-txt { color: rgba(255,255,255,.76); font-size: 15px; }
+    .total-bar .val-txt { color: #fff; font-size: 32px; font-weight: 700; }
 
     /* ── Botões de ação ──────────────────────────────────── */
     .action-bar {
       background: #fff;
-      padding: 12px 14px env(safe-area-inset-bottom, 18px);
+      padding: 12px 14px;
       padding-bottom: max(18px, env(safe-area-inset-bottom));
       display: flex;
       gap: 12px;
@@ -177,29 +174,23 @@
       -webkit-user-select: none;
       white-space: nowrap;
     }
-    .btn:active { transform: scale(.96); filter: brightness(.92); }
+    .btn:active  { transform: scale(.96); filter: brightness(.92); }
     .btn:disabled { opacity: .45; pointer-events: none; }
 
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--blue);
-      color: var(--blue);
-      flex: 1;
-    }
-    .btn-finalize {
-      background: var(--green);
-      color: #fff;
-      flex: 2;
-      font-size: 20px;
-    }
-    .btn-blue  { background: var(--blue);  color: #fff; width: 100%; font-size: 18px; }
-    .btn-green { background: var(--green); color: #fff; width: 100%; font-size: 18px; }
+    .btn-outline  { background: transparent; border: 2px solid var(--blue); color: var(--blue); flex: 1; }
+    .btn-finalize { background: var(--green); color: #fff; flex: 2; font-size: 20px; }
+    .btn-blue     { background: var(--blue);      color: #fff; width: 100%; font-size: 18px; }
+    .btn-green    { background: var(--green);     color: #fff; width: 100%; font-size: 18px; }
+    .btn-whatsapp { background: var(--whatsapp);  color: #fff; width: 100%; font-size: 18px; }
 
     /* ── Tela de resumo ──────────────────────────────────── */
     .summary-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .receipt-card {
@@ -247,9 +238,54 @@
       text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px;
     }
 
+    /* ── Campo: Nome do comprador ────────────────────────── */
+    .name-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .name-card label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 10px;
+    }
+    .name-input {
+      width: 100%;
+      border: 2px solid #E0E0E0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 17px;
+      outline: none;
+      font-family: inherit;
+      color: var(--text);
+      transition: border-color .2s, box-shadow .2s;
+      background: #FAFAFA;
+    }
+    .name-input::placeholder { color: #BDBDBD; }
+    .name-input:focus {
+      border-color: var(--blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(21,101,192,.1);
+    }
+    .name-input.shake {
+      border-color: var(--red);
+      animation: shake .3s ease;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-7px); }
+      75%      { transform: translateX(7px); }
+    }
+
+    /* ── Botões da tela de resumo ────────────────────────── */
     .summary-btns {
       background: #fff;
-      padding: 12px 16px env(safe-area-inset-bottom, 22px);
+      padding: 12px 16px;
       padding-bottom: max(22px, env(safe-area-inset-bottom));
       display: flex;
       flex-direction: column;
@@ -257,61 +293,6 @@
       box-shadow: 0 -2px 10px rgba(0,0,0,.09);
       flex-shrink: 0;
     }
-
-    /* ── Modal bottom sheet ──────────────────────────────── */
-    .overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.52);
-      z-index: 50;
-      align-items: flex-end;
-      justify-content: center;
-    }
-    .overlay.open { display: flex; animation: fadeIn .22s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .sheet {
-      background: #fff;
-      border-radius: 24px 24px 0 0;
-      width: 100%;
-      max-width: 480px;
-      padding: 22px 20px 28px;
-      max-height: 75vh;
-      overflow-y: auto;
-      animation: slideUp .28s cubic-bezier(.4,0,.2,1);
-    }
-    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .sheet-title { font-size: 19px; font-weight: 700; margin-bottom: 3px; }
-    .sheet-sub   { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
-
-    .device-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 13px 16px;
-      border-radius: 14px;
-      background: var(--blue-pale);
-      margin-bottom: 9px;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .device-item:active { background: #BBDEFB; }
-    .device-icon {
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      background: var(--blue);
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; font-size: 20px;
-    }
-    .device-name { font-weight: 600; font-size: 16px; }
-    .device-mac  { font-size: 12px; color: var(--muted); margin-top: 1px; }
-
-    .sheet-cancel {
-      width: 100%; padding: 14px; margin-top: 4px;
-      border: none; background: transparent;
-      color: var(--blue); font-size: 16px; font-weight: 600;
-      cursor: pointer; border-radius: 14px;
-    }
-    .sheet-cancel:active { background: var(--blue-pale); }
 
     /* ── Dialog central ──────────────────────────────────── */
     .dialog-overlay {
@@ -323,6 +304,7 @@
       padding: 24px;
     }
     .dialog-overlay.open { display: flex; animation: fadeIn .2s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .dialog {
       background: #fff;
@@ -334,9 +316,9 @@
     }
     @keyframes popIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    .d-icon  { font-size: 44px; text-align: center; margin-bottom: 12px; }
-    .d-title { font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-    .d-body  { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 22px; }
+    .d-icon   { font-size: 44px; text-align: center; margin-bottom: 12px; }
+    .d-title  { font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+    .d-body   { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 22px; }
     .d-body strong { color: var(--text); }
     .d-actions { display: flex; gap: 10px; }
     .d-btn {
@@ -344,10 +326,12 @@
       border: none; border-radius: 13px;
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
-    .d-btn:active { filter: brightness(.92); }
+    .d-btn:active  { filter: brightness(.92); }
     .d-btn.cancel  { background: #F0F0F0; color: var(--text); }
-    .d-btn.danger  { background: var(--red);  color: #fff; }
-    .d-btn.primary { background: var(--blue); color: #fff; }
+    .d-btn.danger  { background: var(--red);       color: #fff; }
+    .d-btn.primary { background: var(--blue);      color: #fff; }
+    .d-btn.success { background: var(--green);     color: #fff; }
+    .d-btn.wpp     { background: var(--whatsapp);  color: #fff; }
 
     /* ── Spinner ─────────────────────────────────────────── */
     .spin {
@@ -362,7 +346,8 @@
     /* ── Toast ───────────────────────────────────────────── */
     #toast {
       position: fixed;
-      bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
+      bottom: 110px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
       padding: 11px 22px;
       border-radius: 100px;
       font-size: 14px; font-weight: 500;
@@ -376,21 +361,6 @@
       text-align: center;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ── Impressão ───────────────────────────────────────── */
-    @media print {
-      body { background: #fff; }
-      #sale-screen, .summary-btns, .app-header,
-      #bt-sheet, #clear-dlg, #nobt-dlg, #toast { display: none !important; }
-      #summary-screen { position: static !important; transform: none !important; opacity: 1 !important; }
-      .summary-scroll  { overflow: visible; padding: 0; }
-      .receipt-card { box-shadow: none; border-radius: 0; padding: 0; max-width: 72mm; }
-      .receipt-header { font-size: 13pt; }
-      .receipt-row .rname, .receipt-row .rsub { font-size: 11pt; }
-      .total-box { background: #fff !important; border: 2px solid #000; }
-      .total-box .tb-label,
-      .total-box .tb-value { color: #000 !important; }
-    }
   </style>
 </head>
 <body>
@@ -430,6 +400,8 @@
     </header>
 
     <div class="summary-scroll">
+
+      <!-- Cupom visual -->
       <div class="receipt-card">
         <div class="receipt-header">BAZAR DOS JOVENS</div>
         <hr class="dashed">
@@ -446,27 +418,29 @@
         <hr class="dashed" style="margin-top:14px">
         <div class="receipt-thanks">Obrigado pela compra!</div>
       </div>
-    </div>
+
+      <!-- Nome do comprador -->
+      <div class="name-card">
+        <label>👤 Nome do Comprador</label>
+        <input
+          class="name-input"
+          id="buyer-name"
+          type="text"
+          placeholder="Ex: João Silva"
+          autocomplete="off"
+          inputmode="text"
+        >
+      </div>
+
+    </div><!-- /summary-scroll -->
 
     <div class="summary-btns">
-      <button class="btn btn-blue" id="btn-print" onclick="handlePrint()">
-        🖨 Imprimir Cupom
+      <button class="btn btn-whatsapp" id="btn-send" onclick="sendToWhatsApp()">
+        💬 Enviar para Caixa
       </button>
-      <button class="btn btn-green" onclick="newSale()">
-        🛍 Nova Venda
+      <button class="btn btn-outline" onclick="goBack()">
+        ✏️ Editar Venda
       </button>
-    </div>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════════
-       SHEET — Seleção de impressora Bluetooth
-  ══════════════════════════════════════════════════════ -->
-  <div class="overlay" id="bt-sheet" onclick="closeBtSheet(event)">
-    <div class="sheet">
-      <div class="sheet-title">Selecionar Impressora</div>
-      <div class="sheet-sub">Impressoras Bluetooth pareadas:</div>
-      <div id="device-list"></div>
-      <button class="sheet-cancel" onclick="closeBtSheetBtn()">Cancelar</button>
     </div>
   </div>
 
@@ -480,23 +454,22 @@
       <div class="d-body">Todas as quantidades serão zeradas.</div>
       <div class="d-actions">
         <button class="d-btn cancel" onclick="closeDlg('clear-dlg')">Cancelar</button>
-        <button class="d-btn danger" onclick="clearSale()">Limpar</button>
+        <button class="d-btn danger"  onclick="clearSale()">Limpar</button>
       </div>
     </div>
   </div>
 
-  <!-- DIALOG — Sem impressora BLE -->
-  <div class="dialog-overlay" id="nobt-dlg">
+  <!-- ══════════════════════════════════════════════════════
+       DIALOG — Venda enviada → Nova venda?
+  ══════════════════════════════════════════════════════ -->
+  <div class="dialog-overlay" id="sent-dlg">
     <div class="dialog">
-      <div class="d-icon">📵</div>
-      <div class="d-title">Impressora não encontrada</div>
-      <div class="d-body">
-        Nenhuma impressora Bluetooth pareada ou o dispositivo<br>não é compatível com BLE.<br><br>
-        <strong>Para parear:</strong> Configurações → Bluetooth → ligue a impressora → selecione-a na lista.
-      </div>
+      <div class="d-icon">✅</div>
+      <div class="d-title">Venda enviada ao caixa!</div>
+      <div class="d-body">Deseja iniciar uma nova venda?</div>
       <div class="d-actions">
-        <button class="d-btn cancel" onclick="closeDlg('nobt-dlg'); window.print()">Imprimir pelo sistema</button>
-        <button class="d-btn primary" onclick="closeDlg('nobt-dlg')">OK</button>
+        <button class="d-btn cancel"  onclick="closeDlg('sent-dlg')">Não</button>
+        <button class="d-btn success" onclick="startNewSale()">Nova Venda</button>
       </div>
     </div>
   </div>
@@ -507,23 +480,41 @@
 <script>
 'use strict';
 
-// ─── Estado ───────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  ⚙️  CONFIGURAÇÃO — altere apenas esta variável
+// ════════════════════════════════════════════════════════════
+
+const NUMERO_CAIXA = '5583999082678';
+// Formato: código do país + DDD + número, SEM espaços ou traços
+// Exemplo Brasil: '5511987654321'
+
+// ════════════════════════════════════════════════════════════
+//  Estado
+// ════════════════════════════════════════════════════════════
 
 const PRICES = [2, 5, 10, 20, 30];
 
 const state = {
   items: PRICES.map(p => ({ price: p, qty: 0 })),
-  btChar: null,
-  btDevice: null,
-  btResolve: null, // resolve da Promise de seleção
 };
 
-// ─── Formatação ───────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Formatação
+// ════════════════════════════════════════════════════════════
 
-const fmt  = v  => 'R$ ' + v.toFixed(2).replace('.', ',');
-const fmtQ = n  => n === 1 ? '1 peça' : `${n} peças`;
+const fmt  = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+const fmtQ = n => n === 1 ? '1 peça' : `${n} peças`;
 
-// ─── Totais ───────────────────────────────────────────────────────────────────
+function horaAtual() {
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+// ════════════════════════════════════════════════════════════
+//  Totais
+// ════════════════════════════════════════════════════════════
 
 function totals() {
   const qty = state.items.reduce((s, i) => s + i.qty, 0);
@@ -531,15 +522,16 @@ function totals() {
   return { qty, val };
 }
 
-// ─── Renderiza lista de itens ─────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Renderiza lista PDV
+// ════════════════════════════════════════════════════════════
 
 function renderList() {
-  const el = document.getElementById('item-list');
-  el.innerHTML = state.items.map((item, i) => `
+  document.getElementById('item-list').innerHTML = state.items.map((item, i) => `
     <div class="item-row">
       <span class="item-price">${fmt(item.price)}</span>
       <button class="qty-btn dec" ontouchstart="" onclick="dec(${i})">−</button>
-      <span class="qty-value${item.qty === 0 ? '' : ''}" id="qv-${i}">${item.qty}</span>
+      <span class="qty-value" id="qv-${i}">${item.qty}</span>
       <button class="qty-btn inc" ontouchstart="" onclick="inc(${i})">+</button>
       <span class="item-sub${item.qty === 0 ? ' zero' : ''}" id="sub-${i}">${fmt(item.price * item.qty)}</span>
     </div>
@@ -553,7 +545,9 @@ function refreshBar() {
   document.getElementById('bar-val').textContent = fmt(val);
 }
 
-// ─── Incremento / Decremento ──────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Incremento / Decremento
+// ════════════════════════════════════════════════════════════
 
 function inc(i) {
   state.items[i].qty++;
@@ -575,7 +569,6 @@ function updateRow(i) {
   sEl.textContent = fmt(item.price * item.qty);
   sEl.className   = 'item-sub' + (item.qty === 0 ? ' zero' : '');
 
-  // animação de bump
   qEl.classList.remove('bump');
   void qEl.offsetWidth;
   qEl.classList.add('bump');
@@ -584,7 +577,9 @@ function updateRow(i) {
   refreshBar();
 }
 
-// ─── Limpar ───────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Limpar venda
+// ════════════════════════════════════════════════════════════
 
 function confirmClear() {
   document.getElementById('clear-dlg').classList.add('open');
@@ -597,7 +592,9 @@ function clearSale() {
   toast('Venda limpa', '#546E7A');
 }
 
-// ─── Navegação entre telas ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Navegação
+// ════════════════════════════════════════════════════════════
 
 function goSummary() {
   if (totals().qty === 0) {
@@ -605,8 +602,10 @@ function goSummary() {
     return;
   }
   renderSummary();
+  document.getElementById('buyer-name').value = '';
   document.getElementById('sale-screen').classList.replace('visible', 'hidden-left');
   document.getElementById('summary-screen').classList.replace('hidden-right', 'visible');
+  setTimeout(() => document.getElementById('buyer-name').focus(), 380);
 }
 
 function goBack() {
@@ -614,14 +613,17 @@ function goBack() {
   document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
 }
 
-function newSale() {
+function startNewSale() {
   state.items.forEach(i => i.qty = 0);
   renderList();
+  closeDlg('sent-dlg');
   document.getElementById('summary-screen').classList.replace('visible', 'hidden-right');
   document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
 }
 
-// ─── Renderiza resumo ─────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Renderiza resumo
+// ════════════════════════════════════════════════════════════
 
 function renderSummary() {
   const active = state.items.filter(i => i.qty > 0);
@@ -638,217 +640,82 @@ function renderSummary() {
   document.getElementById('r-val').textContent = fmt(val);
 }
 
-// ─── Impressão ────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  WhatsApp
+// ════════════════════════════════════════════════════════════
 
-async function handlePrint() {
-  const btn = document.getElementById('btn-print');
-  if ('bluetooth' in navigator) {
-    await printBluetooth(btn);
-  } else {
-    window.print();
+function sendToWhatsApp() {
+  const nameInput = document.getElementById('buyer-name');
+  const nome = nameInput.value.trim();
+
+  // Valida nome
+  if (!nome) {
+    nameInput.classList.remove('shake');
+    void nameInput.offsetWidth;
+    nameInput.classList.add('shake');
+    setTimeout(() => nameInput.classList.remove('shake'), 400);
+    nameInput.focus();
+    toast('Informe o nome do comprador', '#E65100');
+    return;
   }
+
+  const mensagem = buildMessage(nome);
+  const url = `https://wa.me/${NUMERO_CAIXA}?text=${encodeURIComponent(mensagem)}`;
+
+  // Abre o WhatsApp
+  window.open(url, '_blank');
+
+  // Feedback e pergunta sobre nova venda
+  toast('Venda enviada ao caixa!', '#25D366');
+  setTimeout(() => document.getElementById('sent-dlg').classList.add('open'), 600);
 }
 
-// ─── Bluetooth ESC/POS ────────────────────────────────────────────────────────
-
-// Serviços e características BLE mais comuns em impressoras térmicas
-const BLE_SVCS = [
-  '000018f0-0000-1000-8000-00805f9b34fb', // Genérica (mais comum)
-  '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART
-  'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Peripage
-  '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Microchip RNBD
-];
-const BLE_CHARS = [
-  '00002af1-0000-1000-8000-00805f9b34fb', // Genérica write
-  '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART TX
-  'bef8d6c9-9c21-4c9e-b632-bd58c1009f9f', // Peripage
-  '49535343-8841-43f4-a8d4-ecbe34729bb3', // Microchip
-];
-
-async function printBluetooth(btn) {
-  setBtn(btn, true, '<span class="spin"></span> Aguarde...');
-
-  try {
-    // Se já tem canal ativo, imprime direto
-    if (state.btChar && state.btDevice && state.btDevice.gatt.connected) {
-      await sendEscPos(state.btChar);
-      toast('✅ Cupom impresso!', '#2E7D32');
-      return;
-    }
-    state.btChar = null;
-
-    // Usuário escolhe o dispositivo BLE
-    let device;
-    try {
-      device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: BLE_SVCS,
-      });
-    } catch (e) {
-      if (e.name === 'NotFoundError') return; // cancelou
-      throw e;
-    }
-
-    device.addEventListener('gattserverdisconnected', () => {
-      state.btDevice = null;
-      state.btChar   = null;
-    });
-
-    setBtn(btn, true, '<span class="spin"></span> Conectando...');
-    const server = await device.gatt.connect();
-    state.btDevice = device;
-
-    // Descobre o canal de escrita
-    let char = null;
-    outer: for (const svcUUID of BLE_SVCS) {
-      let svc;
-      try { svc = await server.getPrimaryService(svcUUID); } catch { continue; }
-      for (const charUUID of BLE_CHARS) {
-        try {
-          char = await svc.getCharacteristic(charUUID);
-          if (char) break outer;
-        } catch { /* tenta próxima */ }
-      }
-    }
-
-    if (!char) {
-      // Tenta pegar qualquer característica com propriedade writeWithoutResponse
-      try {
-        const services = await server.getPrimaryServices();
-        for (const svc of services) {
-          const chars = await svc.getCharacteristics();
-          for (const c of chars) {
-            if (c.properties.writeWithoutResponse || c.properties.write) {
-              char = c; break;
-            }
-          }
-          if (char) break;
-        }
-      } catch { /* ignora */ }
-    }
-
-    if (!char) {
-      throw new Error('NO_CHAR');
-    }
-
-    state.btChar = char;
-    setBtn(btn, true, '<span class="spin"></span> Imprimindo...');
-    await sendEscPos(char);
-    toast('✅ Cupom impresso!', '#2E7D32');
-
-  } catch (err) {
-    console.warn('[BT]', err);
-    if (err.message === 'NO_CHAR') {
-      toast('Impressora não compatível com BLE', '#B71C1C');
-      setTimeout(() => document.getElementById('nobt-dlg').classList.add('open'), 400);
-    } else {
-      toast('Bluetooth falhou — usando impressão do sistema', '#546E7A');
-      setTimeout(() => window.print(), 700);
-    }
-  } finally {
-    setBtn(btn, false, '🖨 Imprimir Cupom');
-  }
-}
-
-function setBtn(btn, disabled, html) {
-  btn.disabled   = disabled;
-  btn.innerHTML  = html;
-}
-
-// Envia bytes em chunks (MTU BLE padrão = 20 bytes)
-async function sendEscPos(char) {
-  const bytes = buildEscPos();
-  const MTU   = 20;
-  const delay = ms => new Promise(r => setTimeout(r, ms));
-
-  for (let i = 0; i < bytes.length; i += MTU) {
-    const chunk = bytes.slice(i, i + MTU);
-    try {
-      await char.writeValueWithoutResponse(chunk);
-    } catch {
-      await char.writeValue(chunk); // fallback
-    }
-    await delay(18);
-  }
-}
-
-// Monta o cupom ESC/POS
-function buildEscPos() {
+function buildMessage(nome) {
   const active   = state.items.filter(i => i.qty > 0);
-  const totalQty = active.reduce((s, i) => s + i.qty, 0);
-  const totalVal = active.reduce((s, i) => s + i.price * i.qty, 0);
+  const { qty, val } = totals();
+  const hora     = horaAtual();
 
-  const b = [];
-  const push = (...v)  => b.push(...v);
-  const text = str => {
-    const safe = str
-      .replace(/[ãÃ]/g,'a').replace(/[çÇ]/g,'c')
-      .replace(/[éÉêÊëË]/g,'e').replace(/[áÁâÂàÀ]/g,'a')
-      .replace(/[óÓôÔõÕ]/g,'o').replace(/[íÍ]/g,'i').replace(/[úÚ]/g,'u');
-    for (let i = 0; i < safe.length; i++) b.push(safe.charCodeAt(i));
-  };
+  const itensLinhas = active
+    .map(i => `${fmt(i.price)} x ${i.qty} = ${fmt(i.price * i.qty)}`)
+    .join('\n');
 
-  push(0x1B, 0x40);        // ESC @ — init
-  push(0x1B, 0x61, 0x01); // centralizar
-
-  push(0x1B, 0x45, 0x01); // negrito on
-  push(0x1D, 0x21, 0x11); // tamanho duplo
-  text('BAZAR DOS JOVENS\n');
-  push(0x1D, 0x21, 0x00); // tamanho normal
-  push(0x1B, 0x45, 0x00); // negrito off
-
-  push(0x1B, 0x61, 0x00); // alinhar esquerda
-  text('--------------------------------\n');
-
-  for (const item of active) {
-    const p = 'R$ ' + item.price.toFixed(2).replace('.', ',');
-    const s = 'R$ ' + (item.price * item.qty).toFixed(2).replace('.', ',');
-    text(`${p} x ${item.qty} = ${s}\n`);
-  }
-
-  text('--------------------------------\n');
-  push(0x1B, 0x45, 0x01);
-  text(`Total de pecas: ${totalQty}\n`);
-  push(0x1D, 0x21, 0x11);
-  text(`TOTAL: R$ ${totalVal.toFixed(2).replace('.', ',')}\n`);
-  push(0x1D, 0x21, 0x00);
-  push(0x1B, 0x45, 0x00);
-  text('--------------------------------\n');
-
-  push(0x1B, 0x61, 0x01); // centralizar
-  text('Obrigado pela compra!\n');
-
-  push(0x1B, 0x64, 0x04);        // avança 4 linhas
-  push(0x1D, 0x56, 0x41, 0x00); // corte total
-
-  return new Uint8Array(b);
+  return [
+    '🛒 *NOVA VENDA - BAZAR DOS JOVENS*',
+    '',
+    `👤 Cliente: ${nome}`,
+    '',
+    '📦 Itens:',
+    itensLinhas,
+    '',
+    `📊 Total de peças: ${qty}`,
+    '',
+    `💰 Total a pagar: ${fmt(val)}`,
+    '',
+    `⏰ Horário: ${hora}`,
+  ].join('\n');
 }
 
-// ─── Helpers de UI ────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Helpers
+// ════════════════════════════════════════════════════════════
 
 function closeDlg(id) {
   document.getElementById(id).classList.remove('open');
 }
 
-function closeBtSheet(evt) {
-  if (evt.target === document.getElementById('bt-sheet')) closeBtSheetBtn();
-}
-function closeBtSheetBtn() {
-  document.getElementById('bt-sheet').classList.remove('open');
-  if (state.btResolve) { state.btResolve(null); state.btResolve = null; }
-}
-
 let toastTimer;
 function toast(msg, bg = '#333') {
   const el = document.getElementById('toast');
-  el.textContent   = msg;
+  el.textContent      = msg;
   el.style.background = bg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
 }
 
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+//  Init
+// ════════════════════════════════════════════════════════════
 
 renderList();
 </script>
