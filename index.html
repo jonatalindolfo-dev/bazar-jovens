@@ -1,172 +1,856 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Bazar Jovens">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1565C0">
+  <title>Bazar dos Jovens</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    :root {
+      --blue:       #1565C0;
+      --blue-dark:  #0D47A1;
+      --blue-light: #1976D2;
+      --blue-pale:  #E3F2FD;
+      --green:      #2E7D32;
+      --green-light:#388E3C;
+      --red:        #D32F2F;
+      --bg:         #EEF2FF;
+      --card:       #FFFFFF;
+      --text:       #1A1A2E;
+      --muted:      #757575;
+      --shadow:     0 2px 14px rgba(21,101,192,0.13);
+      --radius:     18px;
+    }
 
-<title>Fluxo de Caixa | Jovens + Conectados</title>
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      overflow: hidden;
+    }
 
-<link rel="stylesheet" href="estilo.css">
+    #app {
+      height: 100%;
+      position: relative;
+      max-width: 480px;
+      margin: 0 auto;
+    }
 
+    /* ── Telas ───────────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.32s cubic-bezier(.4,0,.2,1), opacity 0.32s;
+    }
+    .screen.hidden-left  { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+    .screen.hidden-right { transform: translateX(100%);  opacity: 0; pointer-events: none; }
+    .screen.visible      { transform: translateX(0);     opacity: 1; }
+
+    /* ── Cabeçalho ───────────────────────────────────────── */
+    .app-header {
+      background: var(--blue);
+      color: #fff;
+      padding: 16px 20px 13px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,.22);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .app-header h1  { font-size: 20px; font-weight: 700; letter-spacing: .4px; }
+    .app-header .sub{ font-size: 12px; opacity: .72; margin-top: 2px; }
+    .back-btn {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: #fff; font-size: 22px;
+      padding: 8px; cursor: pointer; line-height: 1;
+    }
+
+    /* ── Lista de itens ──────────────────────────────────── */
+    .item-list {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .item-row {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+      transition: box-shadow .15s;
+    }
+
+    .item-price {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--blue);
+      width: 78px;
+      flex-shrink: 0;
+    }
+
+    .qty-btn {
+      width: 50px; height: 50px;
+      border: none;
+      border-radius: 13px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; line-height: 1;
+      color: #fff;
+      transition: transform .1s, filter .1s;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .qty-btn:active { transform: scale(.91); filter: brightness(.88); }
+    .qty-btn.dec { background: #EF5350; }
+    .qty-btn.inc { background: var(--green); }
+
+    .qty-value {
+      width: 50px;
+      text-align: center;
+      font-size: 30px;
+      font-weight: 700;
+      transition: transform .12s;
+    }
+    .qty-value.bump { transform: scale(1.25); }
+
+    .item-sub {
+      flex: 1;
+      text-align: right;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--green);
+      transition: color .2s;
+    }
+    .item-sub.zero { color: #ccc; }
+
+    /* ── Barra de total ──────────────────────────────────── */
+    .total-bar {
+      background: var(--blue);
+      padding: 13px 22px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -3px 12px rgba(0,0,0,.16);
+      flex-shrink: 0;
+    }
+    .total-bar .qty-txt  { color: rgba(255,255,255,.76); font-size: 15px; }
+    .total-bar .val-txt  { color: #fff; font-size: 32px; font-weight: 700; }
+
+    /* ── Botões de ação ──────────────────────────────────── */
+    .action-bar {
+      background: #fff;
+      padding: 12px 14px env(safe-area-inset-bottom, 18px);
+      padding-bottom: max(18px, env(safe-area-inset-bottom));
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 0 18px;
+      height: 54px;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform .1s, filter .1s;
+      user-select: none;
+      -webkit-user-select: none;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.96); filter: brightness(.92); }
+    .btn:disabled { opacity: .45; pointer-events: none; }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--blue);
+      color: var(--blue);
+      flex: 1;
+    }
+    .btn-finalize {
+      background: var(--green);
+      color: #fff;
+      flex: 2;
+      font-size: 20px;
+    }
+    .btn-blue  { background: var(--blue);  color: #fff; width: 100%; font-size: 18px; }
+    .btn-green { background: var(--green); color: #fff; width: 100%; font-size: 18px; }
+
+    /* ── Tela de resumo ──────────────────────────────────── */
+    .summary-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .receipt-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .receipt-header {
+      text-align: center;
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      margin-bottom: 6px;
+    }
+
+    .dashed { border: none; border-top: 1.5px dashed #ccc; margin: 12px 0; }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+    }
+    .receipt-row .rname { font-size: 16px; }
+    .receipt-row .rsub  { font-size: 16px; font-weight: 700; color: var(--green); }
+
+    .pieces-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; color: var(--muted); padding: 4px 0;
+    }
+
+    .total-box {
+      background: var(--blue);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 12px;
+    }
+    .total-box .tb-label { color: rgba(255,255,255,.8); font-size: 14px; font-weight: 600; }
+    .total-box .tb-value { color: #fff; font-size: 28px; font-weight: 700; }
+
+    .receipt-thanks {
+      text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px;
+    }
+
+    .summary-btns {
+      background: #fff;
+      padding: 12px 16px env(safe-area-inset-bottom, 22px);
+      padding-bottom: max(22px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,.09);
+      flex-shrink: 0;
+    }
+
+    /* ── Modal bottom sheet ──────────────────────────────── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.52);
+      z-index: 50;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .overlay.open { display: flex; animation: fadeIn .22s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .sheet {
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      width: 100%;
+      max-width: 480px;
+      padding: 22px 20px 28px;
+      max-height: 75vh;
+      overflow-y: auto;
+      animation: slideUp .28s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .sheet-title { font-size: 19px; font-weight: 700; margin-bottom: 3px; }
+    .sheet-sub   { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+
+    .device-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 16px;
+      border-radius: 14px;
+      background: var(--blue-pale);
+      margin-bottom: 9px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .device-item:active { background: #BBDEFB; }
+    .device-icon {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 20px;
+    }
+    .device-name { font-weight: 600; font-size: 16px; }
+    .device-mac  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+    .sheet-cancel {
+      width: 100%; padding: 14px; margin-top: 4px;
+      border: none; background: transparent;
+      color: var(--blue); font-size: 16px; font-weight: 600;
+      cursor: pointer; border-radius: 14px;
+    }
+    .sheet-cancel:active { background: var(--blue-pale); }
+
+    /* ── Dialog central ──────────────────────────────────── */
+    .dialog-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.52);
+      z-index: 60;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .dialog-overlay.open { display: flex; animation: fadeIn .2s; }
+
+    .dialog {
+      background: #fff;
+      border-radius: 22px;
+      padding: 30px 26px 20px;
+      max-width: 340px; width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,.22);
+      animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .d-icon  { font-size: 44px; text-align: center; margin-bottom: 12px; }
+    .d-title { font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+    .d-body  { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 22px; }
+    .d-body strong { color: var(--text); }
+    .d-actions { display: flex; gap: 10px; }
+    .d-btn {
+      flex: 1; padding: 13px;
+      border: none; border-radius: 13px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .d-btn:active { filter: brightness(.92); }
+    .d-btn.cancel  { background: #F0F0F0; color: var(--text); }
+    .d-btn.danger  { background: var(--red);  color: #fff; }
+    .d-btn.primary { background: var(--blue); color: #fff; }
+
+    /* ── Spinner ─────────────────────────────────────────── */
+    .spin {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Toast ───────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
+      padding: 11px 22px;
+      border-radius: 100px;
+      font-size: 14px; font-weight: 500;
+      color: #fff;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      z-index: 100;
+      white-space: nowrap;
+      max-width: 90vw;
+      text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Impressão ───────────────────────────────────────── */
+    @media print {
+      body { background: #fff; }
+      #sale-screen, .summary-btns, .app-header,
+      #bt-sheet, #clear-dlg, #nobt-dlg, #toast { display: none !important; }
+      #summary-screen { position: static !important; transform: none !important; opacity: 1 !important; }
+      .summary-scroll  { overflow: visible; padding: 0; }
+      .receipt-card { box-shadow: none; border-radius: 0; padding: 0; max-width: 72mm; }
+      .receipt-header { font-size: 13pt; }
+      .receipt-row .rname, .receipt-row .rsub { font-size: 11pt; }
+      .total-box { background: #fff !important; border: 2px solid #000; }
+      .total-box .tb-label,
+      .total-box .tb-value { color: #000 !important; }
+    }
+  </style>
 </head>
-
 <body>
+<div id="app">
 
-<!-- LOGIN -->
+  <!-- ══════════════════════════════════════════════════════
+       TELA 1 — PDV
+  ══════════════════════════════════════════════════════ -->
+  <div id="sale-screen" class="screen visible">
 
-<div id="loginTela">
+    <header class="app-header">
+      <h1>Bazar dos Jovens</h1>
+      <div class="sub">PDV — Ponto de Venda</div>
+    </header>
 
-<div class="login-box">
+    <div class="item-list" id="item-list"></div>
 
-<h2>Acesso ao Fluxo<br>Jovens + Conectados</h2>
+    <div class="total-bar">
+      <span class="qty-txt" id="bar-qty">0 peças</span>
+      <span class="val-txt" id="bar-val">R$ 0,00</span>
+    </div>
 
-<div class="campo-senha">
+    <div class="action-bar">
+      <button class="btn btn-outline" onclick="confirmClear()">🗑 Limpar</button>
+      <button class="btn btn-finalize" onclick="goSummary()">✅ Finalizar</button>
+    </div>
+  </div>
 
-<input
-type="password"
-id="senhaInput"
-placeholder="Digite a senha"
-/>
+  <!-- ══════════════════════════════════════════════════════
+       TELA 2 — RESUMO
+  ══════════════════════════════════════════════════════ -->
+  <div id="summary-screen" class="screen hidden-right">
 
-<span id="toggleSenha">👁</span>
+    <header class="app-header">
+      <button class="back-btn" onclick="goBack()">&#8592;</button>
+      <h1>Resumo da Venda</h1>
+    </header>
 
+    <div class="summary-scroll">
+      <div class="receipt-card">
+        <div class="receipt-header">BAZAR DOS JOVENS</div>
+        <hr class="dashed">
+        <div id="r-items"></div>
+        <hr class="dashed">
+        <div class="pieces-row">
+          <span>Total de peças:</span>
+          <strong id="r-qty">0</strong>
+        </div>
+        <div class="total-box">
+          <span class="tb-label">TOTAL A PAGAR</span>
+          <span class="tb-value" id="r-val">R$ 0,00</span>
+        </div>
+        <hr class="dashed" style="margin-top:14px">
+        <div class="receipt-thanks">Obrigado pela compra!</div>
+      </div>
+    </div>
+
+    <div class="summary-btns">
+      <button class="btn btn-blue" id="btn-print" onclick="handlePrint()">
+        🖨 Imprimir Cupom
+      </button>
+      <button class="btn btn-green" onclick="newSale()">
+        🛍 Nova Venda
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       SHEET — Seleção de impressora Bluetooth
+  ══════════════════════════════════════════════════════ -->
+  <div class="overlay" id="bt-sheet" onclick="closeBtSheet(event)">
+    <div class="sheet">
+      <div class="sheet-title">Selecionar Impressora</div>
+      <div class="sheet-sub">Impressoras Bluetooth pareadas:</div>
+      <div id="device-list"></div>
+      <button class="sheet-cancel" onclick="closeBtSheetBtn()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       DIALOG — Confirmar limpeza
+  ══════════════════════════════════════════════════════ -->
+  <div class="dialog-overlay" id="clear-dlg">
+    <div class="dialog">
+      <div class="d-icon">🗑</div>
+      <div class="d-title">Limpar venda?</div>
+      <div class="d-body">Todas as quantidades serão zeradas.</div>
+      <div class="d-actions">
+        <button class="d-btn cancel" onclick="closeDlg('clear-dlg')">Cancelar</button>
+        <button class="d-btn danger" onclick="clearSale()">Limpar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIALOG — Sem impressora BLE -->
+  <div class="dialog-overlay" id="nobt-dlg">
+    <div class="dialog">
+      <div class="d-icon">📵</div>
+      <div class="d-title">Impressora não encontrada</div>
+      <div class="d-body">
+        Nenhuma impressora Bluetooth pareada ou o dispositivo<br>não é compatível com BLE.<br><br>
+        <strong>Para parear:</strong> Configurações → Bluetooth → ligue a impressora → selecione-a na lista.
+      </div>
+      <div class="d-actions">
+        <button class="d-btn cancel" onclick="closeDlg('nobt-dlg'); window.print()">Imprimir pelo sistema</button>
+        <button class="d-btn primary" onclick="closeDlg('nobt-dlg')">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
 </div>
 
-<button id="btnLogin">
-Entrar
-</button>
+<script>
+'use strict';
 
-<p id="erroSenha">Senha incorreta</p>
+// ─── Estado ───────────────────────────────────────────────────────────────────
 
-</div>
+const PRICES = [2, 5, 10, 20, 30];
 
-</div>
+const state = {
+  items: PRICES.map(p => ({ price: p, qty: 0 })),
+  btChar: null,
+  btDevice: null,
+  btResolve: null, // resolve da Promise de seleção
+};
 
+// ─── Formatação ───────────────────────────────────────────────────────────────
 
-<!-- APP -->
+const fmt  = v  => 'R$ ' + v.toFixed(2).replace('.', ',');
+const fmtQ = n  => n === 1 ? '1 peça' : `${n} peças`;
 
-<div id="appConteudo" style="display:none;">
+// ─── Totais ───────────────────────────────────────────────────────────────────
 
-<h1>
-Fluxo de Caixa
-<span class="tag-conectados">JOVENS + CONECTADOS</span>
-</h1>
+function totals() {
+  const qty = state.items.reduce((s, i) => s + i.qty, 0);
+  const val = state.items.reduce((s, i) => s + i.price * i.qty, 0);
+  return { qty, val };
+}
 
-<button class="btn-sair" id="btnLogout">Sair</button>
+// ─── Renderiza lista de itens ─────────────────────────────────────────────────
 
+function renderList() {
+  const el = document.getElementById('item-list');
+  el.innerHTML = state.items.map((item, i) => `
+    <div class="item-row">
+      <span class="item-price">${fmt(item.price)}</span>
+      <button class="qty-btn dec" ontouchstart="" onclick="dec(${i})">−</button>
+      <span class="qty-value${item.qty === 0 ? '' : ''}" id="qv-${i}">${item.qty}</span>
+      <button class="qty-btn inc" ontouchstart="" onclick="inc(${i})">+</button>
+      <span class="item-sub${item.qty === 0 ? ' zero' : ''}" id="sub-${i}">${fmt(item.price * item.qty)}</span>
+    </div>
+  `).join('');
+  refreshBar();
+}
 
-<section>
+function refreshBar() {
+  const { qty, val } = totals();
+  document.getElementById('bar-qty').textContent = fmtQ(qty);
+  document.getElementById('bar-val').textContent = fmt(val);
+}
 
-<h3>Selecionar Período</h3>
+// ─── Incremento / Decremento ──────────────────────────────────────────────────
 
-<select id="mesSelecionado">
+function inc(i) {
+  state.items[i].qty++;
+  updateRow(i);
+}
 
-<option value="01">Janeiro</option>
-<option value="02">Fevereiro</option>
-<option value="03">Março</option>
-<option value="04">Abril</option>
-<option value="05">Maio</option>
-<option value="06">Junho</option>
-<option value="07">Julho</option>
-<option value="08">Agosto</option>
-<option value="09">Setembro</option>
-<option value="10">Outubro</option>
-<option value="11">Novembro</option>
-<option value="12">Dezembro</option>
+function dec(i) {
+  if (state.items[i].qty === 0) return;
+  state.items[i].qty--;
+  updateRow(i);
+}
 
-</select>
+function updateRow(i) {
+  const item = state.items[i];
+  const qEl  = document.getElementById(`qv-${i}`);
+  const sEl  = document.getElementById(`sub-${i}`);
 
-<select id="anoSelecionado"></select>
+  qEl.textContent = item.qty;
+  sEl.textContent = fmt(item.price * item.qty);
+  sEl.className   = 'item-sub' + (item.qty === 0 ? ' zero' : '');
 
-</section>
+  // animação de bump
+  qEl.classList.remove('bump');
+  void qEl.offsetWidth;
+  qEl.classList.add('bump');
+  setTimeout(() => qEl.classList.remove('bump'), 150);
 
+  refreshBar();
+}
 
-<hr>
+// ─── Limpar ───────────────────────────────────────────────────────────────────
 
+function confirmClear() {
+  document.getElementById('clear-dlg').classList.add('open');
+}
 
-<section id="resumo">
+function clearSale() {
+  state.items.forEach(i => i.qty = 0);
+  renderList();
+  closeDlg('clear-dlg');
+  toast('Venda limpa', '#546E7A');
+}
 
-<p>
-Saldo Geral:
-<strong>R$ <span id="saldo">0,00</span></strong>
-</p>
+// ─── Navegação entre telas ────────────────────────────────────────────────────
 
-<p>
-Entradas do Mês:
-<strong>R$ <span id="entradas">0,00</span></strong>
-</p>
+function goSummary() {
+  if (totals().qty === 0) {
+    toast('Adicione pelo menos um item', '#E65100');
+    return;
+  }
+  renderSummary();
+  document.getElementById('sale-screen').classList.replace('visible', 'hidden-left');
+  document.getElementById('summary-screen').classList.replace('hidden-right', 'visible');
+}
 
-<p>
-Saídas do Mês:
-<strong>R$ <span id="saidas">0,00</span></strong>
-</p>
+function goBack() {
+  document.getElementById('summary-screen').classList.replace('visible', 'hidden-right');
+  document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
+}
 
-<p>
-Rendimentos do Mês:
-<strong>R$ <span id="rendimentos">0,00</span></strong>
-</p>
+function newSale() {
+  state.items.forEach(i => i.qty = 0);
+  renderList();
+  document.getElementById('summary-screen').classList.replace('visible', 'hidden-right');
+  document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
+}
 
-<p>
-Resultado do Mês:
-<strong>R$ <span id="resultadoMes">0,00</span></strong>
-</p>
+// ─── Renderiza resumo ─────────────────────────────────────────────────────────
 
-</section>
+function renderSummary() {
+  const active = state.items.filter(i => i.qty > 0);
+  const { qty, val } = totals();
 
+  document.getElementById('r-items').innerHTML = active.map(item => `
+    <div class="receipt-row">
+      <span class="rname">${fmt(item.price)} &times; ${item.qty}</span>
+      <span class="rsub">${fmt(item.price * item.qty)}</span>
+    </div>
+  `).join('');
 
-<hr>
+  document.getElementById('r-qty').textContent = qty;
+  document.getElementById('r-val').textContent = fmt(val);
+}
 
+// ─── Impressão ────────────────────────────────────────────────────────────────
 
-<section>
+async function handlePrint() {
+  const btn = document.getElementById('btn-print');
+  if ('bluetooth' in navigator) {
+    await printBluetooth(btn);
+  } else {
+    window.print();
+  }
+}
 
-<h2>Novo Lançamento</h2>
+// ─── Bluetooth ESC/POS ────────────────────────────────────────────────────────
 
-<select id="tipo">
+// Serviços e características BLE mais comuns em impressoras térmicas
+const BLE_SVCS = [
+  '000018f0-0000-1000-8000-00805f9b34fb', // Genérica (mais comum)
+  '6e400001-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART
+  'e7810a71-73ae-499d-8c15-faa9aef0c3f2', // Peripage
+  '49535343-fe7d-4ae5-8fa9-9fafd205e455', // Microchip RNBD
+];
+const BLE_CHARS = [
+  '00002af1-0000-1000-8000-00805f9b34fb', // Genérica write
+  '6e400002-b5a3-f393-e0a9-e50e24dcca9e', // Nordic UART TX
+  'bef8d6c9-9c21-4c9e-b632-bd58c1009f9f', // Peripage
+  '49535343-8841-43f4-a8d4-ecbe34729bb3', // Microchip
+];
 
-<option value="entrada">Entrada</option>
-<option value="saida">Saída</option>
-<option value="rendimento">Rendimento</option>
+async function printBluetooth(btn) {
+  setBtn(btn, true, '<span class="spin"></span> Aguarde...');
 
-</select>
+  try {
+    // Se já tem canal ativo, imprime direto
+    if (state.btChar && state.btDevice && state.btDevice.gatt.connected) {
+      await sendEscPos(state.btChar);
+      toast('✅ Cupom impresso!', '#2E7D32');
+      return;
+    }
+    state.btChar = null;
 
-<input
-type="text"
-id="valor"
-placeholder="Valor"
-/>
+    // Usuário escolhe o dispositivo BLE
+    let device;
+    try {
+      device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: BLE_SVCS,
+      });
+    } catch (e) {
+      if (e.name === 'NotFoundError') return; // cancelou
+      throw e;
+    }
 
-<input
-type="date"
-id="data"
-/>
+    device.addEventListener('gattserverdisconnected', () => {
+      state.btDevice = null;
+      state.btChar   = null;
+    });
 
-<input
-type="text"
-id="descricao"
-placeholder="Descrição"
-/>
+    setBtn(btn, true, '<span class="spin"></span> Conectando...');
+    const server = await device.gatt.connect();
+    state.btDevice = device;
 
-<button id="btnAdicionar">
-Adicionar
-</button>
+    // Descobre o canal de escrita
+    let char = null;
+    outer: for (const svcUUID of BLE_SVCS) {
+      let svc;
+      try { svc = await server.getPrimaryService(svcUUID); } catch { continue; }
+      for (const charUUID of BLE_CHARS) {
+        try {
+          char = await svc.getCharacteristic(charUUID);
+          if (char) break outer;
+        } catch { /* tenta próxima */ }
+      }
+    }
 
-</section>
+    if (!char) {
+      // Tenta pegar qualquer característica com propriedade writeWithoutResponse
+      try {
+        const services = await server.getPrimaryServices();
+        for (const svc of services) {
+          const chars = await svc.getCharacteristics();
+          for (const c of chars) {
+            if (c.properties.writeWithoutResponse || c.properties.write) {
+              char = c; break;
+            }
+          }
+          if (char) break;
+        }
+      } catch { /* ignora */ }
+    }
 
+    if (!char) {
+      throw new Error('NO_CHAR');
+    }
 
-<hr>
+    state.btChar = char;
+    setBtn(btn, true, '<span class="spin"></span> Imprimindo...');
+    await sendEscPos(char);
+    toast('✅ Cupom impresso!', '#2E7D32');
 
+  } catch (err) {
+    console.warn('[BT]', err);
+    if (err.message === 'NO_CHAR') {
+      toast('Impressora não compatível com BLE', '#B71C1C');
+      setTimeout(() => document.getElementById('nobt-dlg').classList.add('open'), 400);
+    } else {
+      toast('Bluetooth falhou — usando impressão do sistema', '#546E7A');
+      setTimeout(() => window.print(), 700);
+    }
+  } finally {
+    setBtn(btn, false, '🖨 Imprimir Cupom');
+  }
+}
 
-<section>
+function setBtn(btn, disabled, html) {
+  btn.disabled   = disabled;
+  btn.innerHTML  = html;
+}
 
-<h2>Lançamentos do Período</h2>
+// Envia bytes em chunks (MTU BLE padrão = 20 bytes)
+async function sendEscPos(char) {
+  const bytes = buildEscPos();
+  const MTU   = 20;
+  const delay = ms => new Promise(r => setTimeout(r, ms));
 
-<ul id="lista"></ul>
+  for (let i = 0; i < bytes.length; i += MTU) {
+    const chunk = bytes.slice(i, i + MTU);
+    try {
+      await char.writeValueWithoutResponse(chunk);
+    } catch {
+      await char.writeValue(chunk); // fallback
+    }
+    await delay(18);
+  }
+}
 
-</section>
+// Monta o cupom ESC/POS
+function buildEscPos() {
+  const active   = state.items.filter(i => i.qty > 0);
+  const totalQty = active.reduce((s, i) => s + i.qty, 0);
+  const totalVal = active.reduce((s, i) => s + i.price * i.qty, 0);
 
+  const b = [];
+  const push = (...v)  => b.push(...v);
+  const text = str => {
+    const safe = str
+      .replace(/[ãÃ]/g,'a').replace(/[çÇ]/g,'c')
+      .replace(/[éÉêÊëË]/g,'e').replace(/[áÁâÂàÀ]/g,'a')
+      .replace(/[óÓôÔõÕ]/g,'o').replace(/[íÍ]/g,'i').replace(/[úÚ]/g,'u');
+    for (let i = 0; i < safe.length; i++) b.push(safe.charCodeAt(i));
+  };
 
-<script src="script.js"></script>
+  push(0x1B, 0x40);        // ESC @ — init
+  push(0x1B, 0x61, 0x01); // centralizar
 
+  push(0x1B, 0x45, 0x01); // negrito on
+  push(0x1D, 0x21, 0x11); // tamanho duplo
+  text('BAZAR DOS JOVENS\n');
+  push(0x1D, 0x21, 0x00); // tamanho normal
+  push(0x1B, 0x45, 0x00); // negrito off
+
+  push(0x1B, 0x61, 0x00); // alinhar esquerda
+  text('--------------------------------\n');
+
+  for (const item of active) {
+    const p = 'R$ ' + item.price.toFixed(2).replace('.', ',');
+    const s = 'R$ ' + (item.price * item.qty).toFixed(2).replace('.', ',');
+    text(`${p} x ${item.qty} = ${s}\n`);
+  }
+
+  text('--------------------------------\n');
+  push(0x1B, 0x45, 0x01);
+  text(`Total de pecas: ${totalQty}\n`);
+  push(0x1D, 0x21, 0x11);
+  text(`TOTAL: R$ ${totalVal.toFixed(2).replace('.', ',')}\n`);
+  push(0x1D, 0x21, 0x00);
+  push(0x1B, 0x45, 0x00);
+  text('--------------------------------\n');
+
+  push(0x1B, 0x61, 0x01); // centralizar
+  text('Obrigado pela compra!\n');
+
+  push(0x1B, 0x64, 0x04);        // avança 4 linhas
+  push(0x1D, 0x56, 0x41, 0x00); // corte total
+
+  return new Uint8Array(b);
+}
+
+// ─── Helpers de UI ────────────────────────────────────────────────────────────
+
+function closeDlg(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function closeBtSheet(evt) {
+  if (evt.target === document.getElementById('bt-sheet')) closeBtSheetBtn();
+}
+function closeBtSheetBtn() {
+  document.getElementById('bt-sheet').classList.remove('open');
+  if (state.btResolve) { state.btResolve(null); state.btResolve = null; }
+}
+
+let toastTimer;
+function toast(msg, bg = '#333') {
+  const el = document.getElementById('toast');
+  el.textContent   = msg;
+  el.style.background = bg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+
+renderList();
+</script>
 </body>
 </html>
