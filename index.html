@@ -6,29 +6,27 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Bazar Jovens">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1565C0">
   <title>Bazar dos Jovens</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --blue:      #1565C0;
-      --blue-pale: #E3F2FD;
-      --green:     #2E7D32;
-      --whatsapp:  #25D366;
-      --red:       #D32F2F;
-      --bg:        #EEF2FF;
-      --card:      #FFFFFF;
-      --text:      #1A1A2E;
-      --muted:     #757575;
-      --shadow:    0 2px 14px rgba(21,101,192,0.13);
-      --radius:    18px;
+      --blue:   #1565C0;
+      --green:  #2E7D32;
+      --purple: #6A1B9A;
+      --red:    #C62828;
+      --bg:     #EEF2FF;
+      --card:   #FFFFFF;
+      --text:   #1A1A2E;
+      --muted:  #757575;
+      --shadow: 0 2px 14px rgba(21,101,192,0.13);
+      --radius: 18px;
     }
 
     html, body {
       height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       -webkit-tap-highlight-color: transparent;
@@ -42,323 +40,328 @@
       margin: 0 auto;
     }
 
-    /* ── Telas ───────────────────────────────────────────── */
+    /* ── Telas ────────────────────────────────────────────── */
     .screen {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.32s cubic-bezier(.4,0,.2,1), opacity 0.32s;
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
     }
     .screen.hidden-left  { transform: translateX(-100%); opacity: 0; pointer-events: none; }
     .screen.hidden-right { transform: translateX(100%);  opacity: 0; pointer-events: none; }
     .screen.visible      { transform: translateX(0);     opacity: 1; }
 
-    /* ── Cabeçalho ───────────────────────────────────────── */
+    /* ── Cabeçalho ────────────────────────────────────────── */
     .app-header {
-      background: var(--blue);
-      color: #fff;
-      padding: 16px 20px 13px;
+      color: #fff; padding: 16px 20px 13px;
       text-align: center;
       box-shadow: 0 2px 10px rgba(0,0,0,.22);
-      flex-shrink: 0;
-      position: relative;
+      flex-shrink: 0; position: relative;
     }
-    .app-header h1  { font-size: 20px; font-weight: 700; letter-spacing: .4px; }
-    .app-header .sub{ font-size: 12px; opacity: .72; margin-top: 2px; }
+    .app-header.blue   { background: var(--blue); }
+    .app-header.green  { background: var(--green); }
+    .app-header.purple { background: var(--purple); }
+    .app-header h1  { font-size: 20px; font-weight: 700; }
+    .app-header .sub{ font-size: 12px; opacity: .75; margin-top: 2px; }
     .back-btn {
       position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: #fff; font-size: 22px;
-      padding: 8px; cursor: pointer; line-height: 1;
+      background: none; border: none; color: #fff;
+      font-size: 24px; padding: 8px; cursor: pointer; line-height: 1;
     }
 
-    /* ── Lista de itens ──────────────────────────────────── */
-    .item-list {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    /* ── Home ─────────────────────────────────────────────── */
+    .home-wrap {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 28px 20px; gap: 22px;
     }
+    .home-logo { text-align: center; }
+    .home-logo .logo-icon { font-size: 54px; line-height: 1; }
+    .home-logo h1 { font-size: 26px; font-weight: 800; color: var(--blue); margin-top: 10px; letter-spacing: .5px; }
+    .home-logo p  { font-size: 14px; color: var(--muted); margin-top: 4px; }
 
-    .item-row {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .home-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+    .home-row  { display: flex; gap: 12px; }
+
+    .home-btn {
+      border: none; border-radius: 20px; padding: 20px 16px;
+      cursor: pointer; color: #fff;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      transition: transform .1s, filter .1s;
+      user-select: none; -webkit-user-select: none;
+      position: relative; overflow: hidden;
+    }
+    .home-btn:active { transform: scale(.95); filter: brightness(.88); }
+    .home-btn.half { flex: 1; min-height: 115px; }
+    .home-btn.full { width: 100%; min-height: 78px; flex-direction: row; gap: 16px; justify-content: center; }
+    .home-btn.sala1  { background: var(--blue); }
+    .home-btn.sala2  { background: var(--green); }
+    .home-btn.caixa  { background: var(--purple); }
+    .hb-icon  { font-size: 30px; line-height: 1; }
+    .hb-title { font-size: 20px; font-weight: 800; }
+    .hb-sub   { font-size: 12px; opacity: .85; text-align: center; }
+
+    .caixa-badge {
+      position: absolute; top: 10px; right: 10px;
+      background: #FF5722; color: #fff;
+      font-size: 12px; font-weight: 700;
+      min-width: 22px; height: 22px; border-radius: 100px;
+      display: flex; align-items: center; justify-content: center; padding: 0 5px;
+    }
+    .caixa-badge.hidden { display: none; }
+
+    /* ── Campo de comanda ─────────────────────────────────── */
+    .comanda-field {
+      padding: 14px 14px 0; flex-shrink: 0;
+    }
+    .comanda-field label {
+      display: block; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .comanda-input {
+      width: 100%;
+      border: 2.5px solid #E0E0E0; border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 26px; font-weight: 700; text-align: center;
+      letter-spacing: 6px; outline: none;
+      font-family: inherit; color: var(--text);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
       box-shadow: var(--shadow);
     }
+    .comanda-input::placeholder { font-size: 16px; letter-spacing: 0; font-weight: 400; color: #BDBDBD; }
+    .comanda-input.blue-focus:focus  { border-color: var(--blue);   box-shadow: 0 0 0 3px rgba(21,101,192,.12); }
+    .comanda-input.green-focus:focus { border-color: var(--green);  box-shadow: 0 0 0 3px rgba(46,125,50,.12); }
+    .comanda-input.error { border-color: var(--red); animation: shake .3s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
 
-    .item-price {
-      font-size: 19px;
-      font-weight: 700;
-      color: var(--blue);
-      width: 78px;
-      flex-shrink: 0;
+    /* ── Lista de itens ───────────────────────────────────── */
+    .item-list {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      padding: 14px;
+      display: flex; flex-direction: column; gap: 10px;
     }
+    .item-row {
+      background: var(--card); border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: var(--shadow);
+    }
+    .item-price { font-size: 19px; font-weight: 700; width: 82px; flex-shrink: 0; }
+    .item-price.blue   { color: var(--blue); }
+    .item-price.green  { color: var(--green); }
 
     .qty-btn {
-      width: 50px; height: 50px;
-      border: none;
-      border-radius: 13px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px; line-height: 1;
-      color: #fff;
+      width: 50px; height: 50px; border: none; border-radius: 13px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; line-height: 1; color: #fff;
       transition: transform .1s, filter .1s;
-      flex-shrink: 0;
-      user-select: none;
-      -webkit-user-select: none;
+      flex-shrink: 0; user-select: none; -webkit-user-select: none;
     }
     .qty-btn:active { transform: scale(.91); filter: brightness(.88); }
     .qty-btn.dec { background: #EF5350; }
     .qty-btn.inc { background: var(--green); }
 
     .qty-value {
-      width: 50px;
-      text-align: center;
-      font-size: 30px;
-      font-weight: 700;
+      width: 50px; text-align: center;
+      font-size: 30px; font-weight: 700;
       transition: transform .12s;
     }
-    .qty-value.bump { transform: scale(1.25); }
+    .qty-value.bump { transform: scale(1.28); }
 
-    .item-sub {
-      flex: 1;
-      text-align: right;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--green);
-      transition: color .2s;
-    }
+    .item-sub { flex: 1; text-align: right; font-size: 18px; font-weight: 700; color: var(--green); transition: color .2s; }
     .item-sub.zero { color: #ccc; }
 
-    /* ── Barra de total ──────────────────────────────────── */
+    /* ── Barra de total ───────────────────────────────────── */
     .total-bar {
-      background: var(--blue);
       padding: 13px 22px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 -3px 12px rgba(0,0,0,.16);
-      flex-shrink: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 -3px 12px rgba(0,0,0,.16); flex-shrink: 0;
     }
+    .total-bar.blue   { background: var(--blue); }
+    .total-bar.green  { background: var(--green); }
+    .total-bar.purple { background: var(--purple); }
     .total-bar .qty-txt { color: rgba(255,255,255,.76); font-size: 15px; }
-    .total-bar .val-txt { color: #fff; font-size: 32px; font-weight: 700; }
+    .total-bar .val-txt { color: #fff; font-size: 30px; font-weight: 700; }
 
-    /* ── Botões de ação ──────────────────────────────────── */
+    /* ── Botões de ação ───────────────────────────────────── */
     .action-bar {
-      background: #fff;
-      padding: 12px 14px;
+      background: #fff; padding: 12px 14px;
       padding-bottom: max(18px, env(safe-area-inset-bottom));
-      display: flex;
-      gap: 12px;
-      flex-shrink: 0;
+      display: flex; gap: 12px; flex-shrink: 0;
     }
-
     .btn {
-      border: none;
-      border-radius: 14px;
-      padding: 0 18px;
-      height: 54px;
-      font-size: 17px;
-      font-weight: 600;
+      border: none; border-radius: 14px;
+      padding: 0 18px; height: 54px;
+      font-size: 17px; font-weight: 600;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: transform .1s, filter .1s;
-      user-select: none;
-      -webkit-user-select: none;
-      white-space: nowrap;
+      user-select: none; -webkit-user-select: none; white-space: nowrap;
     }
-    .btn:active  { transform: scale(.96); filter: brightness(.92); }
+    .btn:active   { transform: scale(.96); filter: brightness(.92); }
     .btn:disabled { opacity: .45; pointer-events: none; }
+    .btn-outline { background: transparent; border: 2px solid #BDBDBD; color: var(--muted); flex: 1; }
+    .btn-blue    { background: var(--blue);   color: #fff; flex: 2; font-size: 18px; }
+    .btn-green   { background: var(--green);  color: #fff; flex: 2; font-size: 18px; }
+    .btn-purple  { background: var(--purple); color: #fff; }
+    .btn-red     { background: var(--red);    color: #fff; }
+    .btn-full    { width: 100%; flex: none; font-size: 18px; }
 
-    .btn-outline  { background: transparent; border: 2px solid var(--blue); color: var(--blue); flex: 1; }
-    .btn-finalize { background: var(--green); color: #fff; flex: 2; font-size: 20px; }
-    .btn-blue     { background: var(--blue);      color: #fff; width: 100%; font-size: 18px; }
-    .btn-green    { background: var(--green);     color: #fff; width: 100%; font-size: 18px; }
-    .btn-whatsapp { background: var(--whatsapp);  color: #fff; width: 100%; font-size: 18px; }
+    /* ── Caixa ────────────────────────────────────────────── */
+    .caixa-tabs {
+      display: flex; background: var(--purple);
+      padding: 10px 14px 0; gap: 6px; flex-shrink: 0;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 8px;
+      background: rgba(255,255,255,.15);
+      border: none; color: rgba(255,255,255,.75);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; border-radius: 10px 10px 0 0;
+      transition: background .15s, color .15s;
+    }
+    .tab-btn.active { background: var(--bg); color: var(--purple); }
 
-    /* ── Tela de resumo ──────────────────────────────────── */
-    .summary-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .caixa-list {
+      flex: 1; overflow-y: auto;
+      padding: 14px; display: flex; flex-direction: column; gap: 10px;
     }
 
-    .receipt-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 24px 22px;
-      box-shadow: var(--shadow);
+    .comanda-card {
+      background: #fff; border-radius: var(--radius);
+      padding: 16px 18px; box-shadow: var(--shadow);
+      cursor: pointer; transition: transform .1s, filter .1s;
+      display: flex; flex-direction: column; gap: 8px;
     }
+    .comanda-card:active { transform: scale(.98); filter: brightness(.97); }
 
-    .receipt-header {
-      text-align: center;
-      font-size: 21px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      margin-bottom: 6px;
-    }
+    .cc-header { display: flex; justify-content: space-between; align-items: center; }
+    .cc-num    { font-size: 18px; font-weight: 800; color: var(--purple); }
+    .cc-badge  { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; text-transform: uppercase; }
+    .cc-badge.aberta  { background: #FFF3E0; color: #E65100; }
+    .cc-badge.pago    { background: #E8F5E9; color: var(--green); }
 
-    .dashed { border: none; border-top: 1.5px dashed #ccc; margin: 12px 0; }
+    .cc-info   { display: flex; justify-content: space-between; align-items: center; }
+    .cc-pieces { font-size: 13px; color: var(--muted); }
+    .cc-total  { font-size: 22px; font-weight: 700; }
+    .cc-footer { font-size: 12px; color: var(--muted); }
 
-    .receipt-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px; color: var(--muted);
     }
-    .receipt-row .rname { font-size: 16px; }
-    .receipt-row .rsub  { font-size: 16px; font-weight: 700; color: var(--green); }
+    .empty-state .es-icon { font-size: 52px; }
+    .empty-state p { font-size: 15px; text-align: center; line-height: 1.5; }
 
-    .pieces-row {
-      display: flex; justify-content: space-between;
-      font-size: 14px; color: var(--muted); padding: 4px 0;
+    /* ── Detalhe ──────────────────────────────────────────── */
+    .detail-scroll {
+      flex: 1; overflow-y: auto;
+      padding: 16px; display: flex; flex-direction: column; gap: 12px;
     }
+    .section-card {
+      background: #fff; border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow);
+    }
+    .section-label {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .7px;
+      margin-bottom: 12px;
+    }
+    .section-label.sala1  { color: var(--blue); }
+    .section-label.sala2  { color: var(--green); }
+    .section-label.total  { color: var(--purple); }
+    .section-label.ok     { color: var(--green); }
 
-    .total-box {
-      background: var(--blue);
-      border-radius: 14px;
-      padding: 14px 18px;
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 12px;
-    }
-    .total-box .tb-label { color: rgba(255,255,255,.8); font-size: 14px; font-weight: 600; }
-    .total-box .tb-value { color: #fff; font-size: 28px; font-weight: 700; }
+    .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+    .dr-name    { font-size: 15px; }
+    .dr-val     { font-size: 15px; font-weight: 700; color: var(--green); }
+    .dashed     { border: none; border-top: 1px dashed #E0E0E0; margin: 6px 0; }
 
-    .receipt-thanks {
-      text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px;
+    .totals-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); padding: 4px 0; }
+    .total-box  {
+      background: var(--purple); border-radius: 14px;
+      padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+      margin-top: 10px;
     }
+    .tb-label { color: rgba(255,255,255,.8); font-size: 13px; font-weight: 600; }
+    .tb-value { color: #fff; font-size: 26px; font-weight: 700; }
 
-    /* ── Campo: Nome do comprador ────────────────────────── */
-    .name-card {
-      background: #fff;
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      box-shadow: var(--shadow);
+    /* ── Pagamento ────────────────────────────────────────── */
+    .payment-field { display: flex; flex-direction: column; gap: 7px; }
+    .payment-field label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .7px; color: var(--muted);
     }
-    .name-card label {
-      display: block;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      margin-bottom: 10px;
-    }
-    .name-input {
-      width: 100%;
-      border: 2px solid #E0E0E0;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 17px;
-      outline: none;
-      font-family: inherit;
-      color: var(--text);
+    .payment-input {
+      width: 100%; border: 2.5px solid #E0E0E0; border-radius: 12px;
+      padding: 13px 18px; font-size: 24px; font-weight: 700;
+      text-align: right; outline: none;
+      font-family: inherit; color: var(--text);
       transition: border-color .2s, box-shadow .2s;
       background: #FAFAFA;
     }
-    .name-input::placeholder { color: #BDBDBD; }
-    .name-input:focus {
-      border-color: var(--blue);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(21,101,192,.1);
+    .payment-input:focus  { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(106,27,154,.1); }
+    .payment-input.error  { border-color: var(--red); animation: shake .3s; }
+
+    .change-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border-radius: 12px; margin-top: 4px;
     }
-    .name-input.shake {
-      border-color: var(--red);
-      animation: shake .3s ease;
-    }
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      25%      { transform: translateX(-7px); }
-      75%      { transform: translateX(7px); }
+    .change-row.pos  { background: #E8F5E9; }
+    .change-row.neg  { background: #FFEBEE; }
+    .change-row.zero { background: #F5F5F5; }
+    .change-label    { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .change-val.pos  { font-size: 22px; font-weight: 700; color: var(--green); }
+    .change-val.neg  { font-size: 22px; font-weight: 700; color: var(--red); }
+    .change-val.zero { font-size: 22px; font-weight: 700; color: var(--muted); }
+
+    /* ── Ações do detalhe ─────────────────────────────────── */
+    .detail-actions {
+      background: #fff; padding: 12px 16px;
+      padding-bottom: max(18px, env(safe-area-inset-bottom));
+      display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,.09); flex-shrink: 0;
     }
 
-    /* ── Botões da tela de resumo ────────────────────────── */
-    .summary-btns {
-      background: #fff;
-      padding: 12px 16px;
-      padding-bottom: max(22px, env(safe-area-inset-bottom));
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,.09);
-      flex-shrink: 0;
+    /* ── Dialog ───────────────────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.52); z-index: 60;
+      align-items: center; justify-content: center; padding: 24px;
     }
-
-    /* ── Dialog central ──────────────────────────────────── */
-    .dialog-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.52);
-      z-index: 60;
-      align-items: center; justify-content: center;
-      padding: 24px;
-    }
-    .dialog-overlay.open { display: flex; animation: fadeIn .2s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .overlay.open { display: flex; animation: fadeIn .2s; }
+    @keyframes fadeIn { from { opacity: 0; } }
 
     .dialog {
-      background: #fff;
-      border-radius: 22px;
-      padding: 30px 26px 20px;
-      max-width: 340px; width: 100%;
+      background: #fff; border-radius: 22px;
+      padding: 28px 24px 20px; max-width: 340px; width: 100%;
       box-shadow: 0 12px 40px rgba(0,0,0,.22);
       animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
     }
-    @keyframes popIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes popIn { from { transform: scale(.88); opacity: 0; } }
 
-    .d-icon   { font-size: 44px; text-align: center; margin-bottom: 12px; }
-    .d-title  { font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-    .d-body   { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 22px; }
-    .d-body strong { color: var(--text); }
+    .d-icon  { font-size: 44px; text-align: center; margin-bottom: 10px; }
+    .d-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+    .d-body  { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 20px; white-space: pre-wrap; }
     .d-actions { display: flex; gap: 10px; }
-    .d-btn {
-      flex: 1; padding: 13px;
-      border: none; border-radius: 13px;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    .d-btn:active  { filter: brightness(.92); }
+    .d-btn { flex: 1; padding: 13px; border: none; border-radius: 13px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .d-btn:active { filter: brightness(.92); }
     .d-btn.cancel  { background: #F0F0F0; color: var(--text); }
-    .d-btn.danger  { background: var(--red);       color: #fff; }
-    .d-btn.primary { background: var(--blue);      color: #fff; }
-    .d-btn.success { background: var(--green);     color: #fff; }
-    .d-btn.wpp     { background: var(--whatsapp);  color: #fff; }
+    .d-btn.confirm { background: var(--purple); color: #fff; }
+    .d-btn.ok      { background: var(--green);  color: #fff; }
 
-    /* ── Spinner ─────────────────────────────────────────── */
-    .spin {
-      display: inline-block; width: 18px; height: 18px;
-      border: 2.5px solid rgba(255,255,255,.35);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Toast ───────────────────────────────────────────── */
+    /* ── Toast ────────────────────────────────────────────── */
     #toast {
-      position: fixed;
-      bottom: 110px; left: 50%;
+      position: fixed; bottom: 110px; left: 50%;
       transform: translateX(-50%) translateY(10px);
-      padding: 11px 22px;
-      border-radius: 100px;
-      font-size: 14px; font-weight: 500;
-      color: #fff;
-      pointer-events: none;
-      opacity: 0;
+      padding: 11px 22px; border-radius: 100px;
+      font-size: 14px; font-weight: 500; color: #fff;
+      pointer-events: none; opacity: 0;
       transition: opacity .3s, transform .3s;
-      z-index: 100;
-      white-space: nowrap;
-      max-width: 90vw;
-      text-align: center;
+      z-index: 100; white-space: nowrap; max-width: 90vw;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
@@ -366,110 +369,129 @@
 <body>
 <div id="app">
 
-  <!-- ══════════════════════════════════════════════════════
-       TELA 1 — PDV
-  ══════════════════════════════════════════════════════ -->
-  <div id="sale-screen" class="screen visible">
-
-    <header class="app-header">
-      <h1>Bazar dos Jovens</h1>
-      <div class="sub">PDV — Ponto de Venda</div>
-    </header>
-
-    <div class="item-list" id="item-list"></div>
-
-    <div class="total-bar">
-      <span class="qty-txt" id="bar-qty">0 peças</span>
-      <span class="val-txt" id="bar-val">R$ 0,00</span>
+  <!-- ════════════════ HOME ════════════════ -->
+  <div id="home-screen" class="screen visible">
+    <div class="home-wrap">
+      <div class="home-logo">
+        <div class="logo-icon">🏷️</div>
+        <h1>BAZAR DOS JOVENS</h1>
+        <p>Sistema de Comandas</p>
+      </div>
+      <div class="home-grid">
+        <div class="home-row">
+          <button class="home-btn sala1 half" onclick="goSala(1)">
+            <div class="hb-icon">🔵</div>
+            <div class="hb-title">SALA 1</div>
+            <div class="hb-sub">R$ 2 e R$ 5</div>
+          </button>
+          <button class="home-btn sala2 half" onclick="goSala(2)">
+            <div class="hb-icon">🟢</div>
+            <div class="hb-title">SALA 2</div>
+            <div class="hb-sub">R$ 10, R$ 20 e R$ 30</div>
+          </button>
+        </div>
+        <button class="home-btn caixa full" onclick="goCaixa()">
+          <div class="hb-icon">💰</div>
+          <div>
+            <div class="hb-title">CAIXA</div>
+            <div class="hb-sub">Gerenciar Comandas</div>
+          </div>
+          <div class="caixa-badge hidden" id="caixa-badge">0</div>
+        </button>
+      </div>
     </div>
+  </div>
 
+  <!-- ════════════════ SALA 1 ════════════════ -->
+  <div id="sala1-screen" class="screen hidden-right">
+    <header class="app-header blue">
+      <button class="back-btn" onclick="back()">&#8592;</button>
+      <h1>Sala 1</h1>
+      <div class="sub">R$ 2,00 e R$ 5,00</div>
+    </header>
+    <div class="comanda-field">
+      <label>🎫 Número da Comanda</label>
+      <input class="comanda-input blue-focus" id="s1-num" type="text"
+             inputmode="numeric" placeholder="Ex: 027" autocomplete="off">
+    </div>
+    <div class="item-list" id="s1-items"></div>
+    <div class="total-bar blue">
+      <span class="qty-txt" id="s1-qty">0 peças</span>
+      <span class="val-txt" id="s1-val">R$ 0,00</span>
+    </div>
     <div class="action-bar">
-      <button class="btn btn-outline" onclick="confirmClear()">🗑 Limpar</button>
-      <button class="btn btn-finalize" onclick="goSummary()">✅ Finalizar</button>
+      <button class="btn btn-outline" onclick="back()">Voltar</button>
+      <button class="btn btn-blue" onclick="addSala(1)">✅ Adicionar à Comanda</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       TELA 2 — RESUMO
-  ══════════════════════════════════════════════════════ -->
-  <div id="summary-screen" class="screen hidden-right">
-
-    <header class="app-header">
-      <button class="back-btn" onclick="goBack()">&#8592;</button>
-      <h1>Resumo da Venda</h1>
+  <!-- ════════════════ SALA 2 ════════════════ -->
+  <div id="sala2-screen" class="screen hidden-right">
+    <header class="app-header green">
+      <button class="back-btn" onclick="back()">&#8592;</button>
+      <h1>Sala 2</h1>
+      <div class="sub">R$ 10,00 · R$ 20,00 · R$ 30,00</div>
     </header>
-
-    <div class="summary-scroll">
-
-      <!-- Cupom visual -->
-      <div class="receipt-card">
-        <div class="receipt-header">BAZAR DOS JOVENS</div>
-        <hr class="dashed">
-        <div id="r-items"></div>
-        <hr class="dashed">
-        <div class="pieces-row">
-          <span>Total de peças:</span>
-          <strong id="r-qty">0</strong>
-        </div>
-        <div class="total-box">
-          <span class="tb-label">TOTAL A PAGAR</span>
-          <span class="tb-value" id="r-val">R$ 0,00</span>
-        </div>
-        <hr class="dashed" style="margin-top:14px">
-        <div class="receipt-thanks">Obrigado pela compra!</div>
-      </div>
-
-      <!-- Nome do comprador -->
-      <div class="name-card">
-        <label>👤 Nome do Comprador</label>
-        <input
-          class="name-input"
-          id="buyer-name"
-          type="text"
-          placeholder="Ex: João Silva"
-          autocomplete="off"
-          inputmode="text"
-        >
-      </div>
-
-    </div><!-- /summary-scroll -->
-
-    <div class="summary-btns">
-      <button class="btn btn-whatsapp" id="btn-send" onclick="sendToWhatsApp()">
-        💬 Enviar para Caixa
-      </button>
-      <button class="btn btn-outline" onclick="goBack()">
-        ✏️ Editar Venda
-      </button>
+    <div class="comanda-field">
+      <label>🎫 Número da Comanda</label>
+      <input class="comanda-input green-focus" id="s2-num" type="text"
+             inputmode="numeric" placeholder="Ex: 027" autocomplete="off">
+    </div>
+    <div class="item-list" id="s2-items"></div>
+    <div class="total-bar green">
+      <span class="qty-txt" id="s2-qty">0 peças</span>
+      <span class="val-txt" id="s2-val">R$ 0,00</span>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-outline" onclick="back()">Voltar</button>
+      <button class="btn btn-green" onclick="addSala(2)">✅ Adicionar à Comanda</button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       DIALOG — Confirmar limpeza
-  ══════════════════════════════════════════════════════ -->
-  <div class="dialog-overlay" id="clear-dlg">
+  <!-- ════════════════ CAIXA ════════════════ -->
+  <div id="caixa-screen" class="screen hidden-right">
+    <header class="app-header purple">
+      <button class="back-btn" onclick="back()">&#8592;</button>
+      <h1>Caixa</h1>
+    </header>
+    <div class="caixa-tabs">
+      <button class="tab-btn active" id="tab-abertas"     onclick="setTab('abertas')">Abertas</button>
+      <button class="tab-btn"        id="tab-finalizadas" onclick="setTab('finalizadas')">Finalizadas</button>
+    </div>
+    <div class="caixa-list" id="caixa-list"></div>
+  </div>
+
+  <!-- ════════════════ DETALHE ════════════════ -->
+  <div id="detail-screen" class="screen hidden-right">
+    <header class="app-header purple">
+      <button class="back-btn" onclick="back()">&#8592;</button>
+      <h1 id="detail-title">COMANDA</h1>
+    </header>
+    <div class="detail-scroll" id="detail-body"></div>
+    <div class="detail-actions" id="detail-actions"></div>
+  </div>
+
+  <!-- Dialog: Confirmar finalizar -->
+  <div class="overlay" id="dlg-confirm">
     <div class="dialog">
-      <div class="d-icon">🗑</div>
-      <div class="d-title">Limpar venda?</div>
-      <div class="d-body">Todas as quantidades serão zeradas.</div>
+      <div class="d-icon">💳</div>
+      <div class="d-title">Finalizar venda?</div>
+      <div class="d-body" id="dlg-confirm-body"></div>
       <div class="d-actions">
-        <button class="d-btn cancel" onclick="closeDlg('clear-dlg')">Cancelar</button>
-        <button class="d-btn danger"  onclick="clearSale()">Limpar</button>
+        <button class="d-btn cancel"  onclick="closeDlg('dlg-confirm')">Cancelar</button>
+        <button class="d-btn confirm" onclick="doFinalizar()">Finalizar</button>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════
-       DIALOG — Venda enviada → Nova venda?
-  ══════════════════════════════════════════════════════ -->
-  <div class="dialog-overlay" id="sent-dlg">
+  <!-- Dialog: Sucesso -->
+  <div class="overlay" id="dlg-ok">
     <div class="dialog">
-      <div class="d-icon">✅</div>
-      <div class="d-title">Venda enviada ao caixa!</div>
-      <div class="d-body">Deseja iniciar uma nova venda?</div>
+      <div class="d-icon">🎉</div>
+      <div class="d-title">Venda finalizada!</div>
+      <div class="d-body">Comanda marcada como PAGO com sucesso.</div>
       <div class="d-actions">
-        <button class="d-btn cancel"  onclick="closeDlg('sent-dlg')">Não</button>
-        <button class="d-btn success" onclick="startNewSale()">Nova Venda</button>
+        <button class="d-btn ok" onclick="afterFinalizar()">Ótimo!</button>
       </div>
     </div>
   </div>
@@ -480,244 +502,443 @@
 <script>
 'use strict';
 
-// ════════════════════════════════════════════════════════════
-//  ⚙️  CONFIGURAÇÃO — altere apenas esta variável
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  Navegação
+// ═══════════════════════════════════════════════════════════
 
-const NUMERO_CAIXA = '5583999082678';
-// Formato: código do país + DDD + número, SEM espaços ou traços
-// Exemplo Brasil: '5511987654321'
+const navStack = ['home'];
 
-// ════════════════════════════════════════════════════════════
-//  Estado
-// ════════════════════════════════════════════════════════════
+function go(id) {
+  const from = navStack[navStack.length - 1];
+  if (from === id) return;
+  navStack.push(id);
+  document.getElementById(from + '-screen').classList.replace('visible', 'hidden-left');
+  document.getElementById(id   + '-screen').classList.replace('hidden-right', 'visible');
+  if (ON_ENTER[id]) ON_ENTER[id]();
+}
 
-const PRICES = [2, 5, 10, 20, 30];
+function back() {
+  if (navStack.length <= 1) return;
+  const from = navStack.pop();
+  const to   = navStack[navStack.length - 1];
+  document.getElementById(from + '-screen').classList.replace('visible', 'hidden-right');
+  document.getElementById(to   + '-screen').classList.replace('hidden-left', 'visible');
+  if (ON_ENTER[to]) ON_ENTER[to]();
+}
 
-const state = {
-  items: PRICES.map(p => ({ price: p, qty: 0 })),
+const ON_ENTER = {
+  home:   () => updateBadge(),
+  caixa:  () => renderCaixa(),
+  detail: () => { if (currentNum) renderDetail(currentNum); },
 };
 
-// ════════════════════════════════════════════════════════════
-//  Formatação
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  localStorage
+// ═══════════════════════════════════════════════════════════
 
-const fmt  = v => 'R$ ' + v.toFixed(2).replace('.', ',');
+const LS = 'bazar_comandas_v1';
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(LS) || '{}'); }
+  catch { return {}; }
+}
+function save(d) { localStorage.setItem(LS, JSON.stringify(d)); }
+
+// ═══════════════════════════════════════════════════════════
+//  Utilitários
+// ═══════════════════════════════════════════════════════════
+
+const fmt  = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
 const fmtQ = n => n === 1 ? '1 peça' : `${n} peças`;
 
-function horaAtual() {
-  const d = new Date();
-  const h = String(d.getHours()).padStart(2, '0');
-  const m = String(d.getMinutes()).padStart(2, '0');
-  return `${h}:${m}`;
+function now() {
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
-// ════════════════════════════════════════════════════════════
-//  Totais
-// ════════════════════════════════════════════════════════════
-
-function totals() {
-  const qty = state.items.reduce((s, i) => s + i.qty, 0);
-  const val = state.items.reduce((s, i) => s + i.price * i.qty, 0);
-  return { qty, val };
+function totals(comanda) {
+  return {
+    qty: comanda.itens.reduce((s,i) => s + i.quantidade, 0),
+    val: comanda.itens.reduce((s,i) => s + i.subtotal,   0),
+  };
 }
 
-// ════════════════════════════════════════════════════════════
-//  Renderiza lista PDV
-// ════════════════════════════════════════════════════════════
+function aggregate(itens) {
+  const m = {};
+  itens.forEach(i => {
+    const k = `${i.sala}|${i.preco}`;
+    if (!m[k]) m[k] = { sala: i.sala, preco: i.preco, quantidade: 0, subtotal: 0 };
+    m[k].quantidade += i.quantidade;
+    m[k].subtotal   += i.subtotal;
+  });
+  return Object.values(m);
+}
 
-function renderList() {
-  document.getElementById('item-list').innerHTML = state.items.map((item, i) => `
+function shake(el) {
+  el.classList.remove('error');
+  void el.offsetWidth;
+  el.classList.add('error');
+  setTimeout(() => el.classList.remove('error'), 400);
+}
+
+let toastTimer;
+function toast(msg, bg = '#333') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.style.background = bg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+function closeDlg(id) { document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════════
+//  Home
+// ═══════════════════════════════════════════════════════════
+
+function updateBadge() {
+  const n = Object.values(load()).filter(c => c.status === 'ABERTA').length;
+  const b = document.getElementById('caixa-badge');
+  b.textContent = n;
+  b.classList.toggle('hidden', n === 0);
+}
+
+function goSala(n) {
+  resetSala(n);
+  go(`sala${n}`);
+  setTimeout(() => document.getElementById(`s${n}-num`).focus(), 360);
+}
+
+function goCaixa() { go('caixa'); }
+
+// ═══════════════════════════════════════════════════════════
+//  Salas — estado e render
+// ═══════════════════════════════════════════════════════════
+
+const SALAS = {
+  1: { label: 'Sala 1', prices: [2, 5],       color: 'blue',  items: [] },
+  2: { label: 'Sala 2', prices: [10, 20, 30],  color: 'green', items: [] },
+};
+
+// Inicializa items
+[1, 2].forEach(n => {
+  SALAS[n].items = SALAS[n].prices.map(p => ({ p, q: 0 }));
+});
+
+function resetSala(n) {
+  SALAS[n].items.forEach(i => i.q = 0);
+  const el = document.getElementById(`s${n}-num`);
+  if (el) el.value = '';
+  renderSala(n);
+}
+
+function renderSala(n) {
+  const s = SALAS[n];
+  document.getElementById(`s${n}-items`).innerHTML = s.items.map((item, i) => `
     <div class="item-row">
-      <span class="item-price">${fmt(item.price)}</span>
-      <button class="qty-btn dec" ontouchstart="" onclick="dec(${i})">−</button>
-      <span class="qty-value" id="qv-${i}">${item.qty}</span>
-      <button class="qty-btn inc" ontouchstart="" onclick="inc(${i})">+</button>
-      <span class="item-sub${item.qty === 0 ? ' zero' : ''}" id="sub-${i}">${fmt(item.price * item.qty)}</span>
-    </div>
-  `).join('');
-  refreshBar();
+      <span class="item-price ${s.color}">${fmt(item.p)}</span>
+      <button class="qty-btn dec" ontouchstart="" onclick="qty(${n},${i},-1)">−</button>
+      <span class="qty-value" id="s${n}q${i}">${item.q}</span>
+      <button class="qty-btn inc" ontouchstart="" onclick="qty(${n},${i},1)">+</button>
+      <span class="item-sub${item.q ? '' : ' zero'}" id="s${n}s${i}">${fmt(item.p * item.q)}</span>
+    </div>`).join('');
+  refreshBar(n);
 }
 
-function refreshBar() {
-  const { qty, val } = totals();
-  document.getElementById('bar-qty').textContent = fmtQ(qty);
-  document.getElementById('bar-val').textContent = fmt(val);
-}
+function qty(n, i, d) {
+  const item = SALAS[n].items[i];
+  item.q = Math.max(0, item.q + d);
 
-// ════════════════════════════════════════════════════════════
-//  Incremento / Decremento
-// ════════════════════════════════════════════════════════════
-
-function inc(i) {
-  state.items[i].qty++;
-  updateRow(i);
-}
-
-function dec(i) {
-  if (state.items[i].qty === 0) return;
-  state.items[i].qty--;
-  updateRow(i);
-}
-
-function updateRow(i) {
-  const item = state.items[i];
-  const qEl  = document.getElementById(`qv-${i}`);
-  const sEl  = document.getElementById(`sub-${i}`);
-
-  qEl.textContent = item.qty;
-  sEl.textContent = fmt(item.price * item.qty);
-  sEl.className   = 'item-sub' + (item.qty === 0 ? ' zero' : '');
+  const qEl = document.getElementById(`s${n}q${i}`);
+  const sEl = document.getElementById(`s${n}s${i}`);
+  qEl.textContent = item.q;
+  sEl.textContent = fmt(item.p * item.q);
+  sEl.className   = 'item-sub' + (item.q ? '' : ' zero');
 
   qEl.classList.remove('bump');
   void qEl.offsetWidth;
   qEl.classList.add('bump');
   setTimeout(() => qEl.classList.remove('bump'), 150);
 
-  refreshBar();
+  refreshBar(n);
 }
 
-// ════════════════════════════════════════════════════════════
-//  Limpar venda
-// ════════════════════════════════════════════════════════════
-
-function confirmClear() {
-  document.getElementById('clear-dlg').classList.add('open');
+function refreshBar(n) {
+  const s   = SALAS[n];
+  const qty = s.items.reduce((a, i) => a + i.q, 0);
+  const val = s.items.reduce((a, i) => a + i.p * i.q, 0);
+  document.getElementById(`s${n}-qty`).textContent = fmtQ(qty);
+  document.getElementById(`s${n}-val`).textContent = fmt(val);
 }
 
-function clearSale() {
-  state.items.forEach(i => i.qty = 0);
-  renderList();
-  closeDlg('clear-dlg');
-  toast('Venda limpa', '#546E7A');
+function addSala(n) {
+  const s   = SALAS[n];
+  const inp = document.getElementById(`s${n}-num`);
+  const num = inp.value.trim().toUpperCase();
+  const qty = s.items.reduce((a, i) => a + i.q, 0);
+
+  if (!num) { shake(inp); toast('Informe o número da comanda', '#E65100'); return; }
+  if (!qty) { toast('Adicione pelo menos 1 item', '#E65100'); return; }
+
+  const data = load();
+
+  if (!data[num]) {
+    data[num] = { numero: num, status: 'ABERTA', criadaEm: now(),
+                  finalizadaEm: null, valorRecebido: null, troco: null, itens: [] };
+  } else if (data[num].status === 'PAGO') {
+    toast(`Comanda ${num} já foi finalizada`, '#C62828'); return;
+  }
+
+  s.items.filter(i => i.q > 0).forEach(i => {
+    data[num].itens.push({ sala: s.label, preco: i.p, quantidade: i.q, subtotal: i.p * i.q, criadoEm: now() });
+  });
+
+  save(data);
+  s.items.forEach(i => i.q = 0);
+  renderSala(n);
+  updateBadge();
+  inp.value = '';
+  inp.focus();
+  if (navigator.vibrate) navigator.vibrate(100);
+  toast('✅ Itens adicionados com sucesso. Informe a próxima comanda.', '#2E7D32');
 }
 
-// ════════════════════════════════════════════════════════════
-//  Navegação
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  Caixa
+// ═══════════════════════════════════════════════════════════
 
-function goSummary() {
-  if (totals().qty === 0) {
-    toast('Adicione pelo menos um item', '#E65100');
+let caixaTab = 'abertas';
+
+function setTab(tab) {
+  caixaTab = tab;
+  document.getElementById('tab-abertas').classList.toggle('active', tab === 'abertas');
+  document.getElementById('tab-finalizadas').classList.toggle('active', tab === 'finalizadas');
+  renderCaixa();
+}
+
+function renderCaixa() {
+  const all      = Object.values(load());
+  const abertas  = all.filter(c => c.status === 'ABERTA')
+                      .sort((a, b) => a.numero.localeCompare(b.numero, undefined, {numeric: true}));
+  const pagas    = all.filter(c => c.status === 'PAGO')
+                      .sort((a, b) => (b.finalizadaEm || '').localeCompare(a.finalizadaEm || ''));
+
+  document.getElementById('tab-abertas').textContent     = `Abertas (${abertas.length})`;
+  document.getElementById('tab-finalizadas').textContent = `Finalizadas (${pagas.length})`;
+
+  const list = document.getElementById('caixa-list');
+  const list_ = caixaTab === 'abertas' ? abertas : pagas;
+
+  if (list_.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="es-icon">${caixaTab === 'abertas' ? '📋' : '🎉'}</div>
+      <p>${caixaTab === 'abertas' ? 'Nenhuma comanda aberta' : 'Nenhuma venda finalizada'}</p>
+    </div>`;
     return;
   }
-  renderSummary();
-  document.getElementById('buyer-name').value = '';
-  document.getElementById('sale-screen').classList.replace('visible', 'hidden-left');
-  document.getElementById('summary-screen').classList.replace('hidden-right', 'visible');
-  setTimeout(() => document.getElementById('buyer-name').focus(), 380);
+
+  list.innerHTML = list_.map(c => {
+    const { qty, val } = totals(c);
+    if (c.status === 'ABERTA') {
+      return `<div class="comanda-card" onclick="openComanda('${c.numero}')">
+        <div class="cc-header">
+          <span class="cc-num">COMANDA ${c.numero}</span>
+          <span class="cc-badge aberta">ABERTA</span>
+        </div>
+        <div class="cc-info">
+          <span class="cc-pieces">${fmtQ(qty)}</span>
+          <span class="cc-total">${fmt(val)}</span>
+        </div>
+        <div class="cc-footer">Criada: ${c.criadaEm}</div>
+      </div>`;
+    } else {
+      return `<div class="comanda-card" onclick="openComanda('${c.numero}')">
+        <div class="cc-header">
+          <span class="cc-num">COMANDA ${c.numero}</span>
+          <span class="cc-badge pago">✓ PAGO</span>
+        </div>
+        <div class="cc-info">
+          <span class="cc-pieces">${fmtQ(qty)}</span>
+          <span class="cc-total">${fmt(val)}</span>
+        </div>
+        <div class="cc-footer">
+          Recebido: ${fmt(c.valorRecebido || 0)} · Troco: ${fmt(c.troco || 0)} · ${c.finalizadaEm}
+        </div>
+      </div>`;
+    }
+  }).join('');
 }
 
-function goBack() {
-  document.getElementById('summary-screen').classList.replace('visible', 'hidden-right');
-  document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
+// ═══════════════════════════════════════════════════════════
+//  Detalhe
+// ═══════════════════════════════════════════════════════════
+
+let currentNum = null;
+
+function openComanda(num) {
+  currentNum = num;
+  go('detail');
 }
 
-function startNewSale() {
-  state.items.forEach(i => i.qty = 0);
-  renderList();
-  closeDlg('sent-dlg');
-  document.getElementById('summary-screen').classList.replace('visible', 'hidden-right');
-  document.getElementById('sale-screen').classList.replace('hidden-left', 'visible');
-}
+function renderDetail(num) {
+  const data    = load();
+  const comanda = data[num];
+  if (!comanda) return;
 
-// ════════════════════════════════════════════════════════════
-//  Renderiza resumo
-// ════════════════════════════════════════════════════════════
+  const { qty, val } = totals(comanda);
+  const agg = aggregate(comanda.itens);
 
-function renderSummary() {
-  const active = state.items.filter(i => i.qty > 0);
-  const { qty, val } = totals();
+  document.getElementById('detail-title').textContent = `COMANDA ${num}`;
 
-  document.getElementById('r-items').innerHTML = active.map(item => `
-    <div class="receipt-row">
-      <span class="rname">${fmt(item.price)} &times; ${item.qty}</span>
-      <span class="rsub">${fmt(item.price * item.qty)}</span>
+  // Agrupa por sala
+  const bySala = {};
+  agg.forEach(i => { (bySala[i.sala] = bySala[i.sala] || []).push(i); });
+
+  let body = '<div class="section-card">';
+
+  ['Sala 1', 'Sala 2'].forEach(sala => {
+    const itens = bySala[sala];
+    if (!itens || !itens.length) return;
+    const cls = sala === 'Sala 1' ? 'sala1' : 'sala2';
+    body += `<div class="section-label ${cls}">${sala}</div>`;
+    itens.forEach(i => {
+      body += `<div class="detail-row">
+        <span class="dr-name">${fmt(i.preco)} × ${i.quantidade}</span>
+        <span class="dr-val">${fmt(i.subtotal)}</span>
+      </div>`;
+    });
+    body += '<hr class="dashed">';
+  });
+
+  body += `<div class="totals-row"><span>Total de peças:</span><strong>${qty}</strong></div>
+    <div class="total-box">
+      <span class="tb-label">TOTAL A PAGAR</span>
+      <span class="tb-value">${fmt(val)}</span>
     </div>
-  `).join('');
+  </div>`;
 
-  document.getElementById('r-qty').textContent = qty;
-  document.getElementById('r-val').textContent = fmt(val);
+  if (comanda.status === 'ABERTA') {
+    body += `<div class="section-card">
+      <div class="section-label total">💳 Pagamento</div>
+      <div class="payment-field">
+        <label>Valor recebido (R$)</label>
+        <input class="payment-input" id="payment-input" type="number"
+               inputmode="decimal" min="0" step="0.01" placeholder="0,00"
+               data-total="${val}" oninput="calcChange(this)">
+      </div>
+      <div class="change-row zero" id="change-row">
+        <span class="change-label">Troco</span>
+        <span class="change-val zero" id="change-val">—</span>
+      </div>
+    </div>`;
+  } else {
+    body += `<div class="section-card">
+      <div class="section-label ok">✓ Venda Finalizada</div>
+      <div class="detail-row">
+        <span class="dr-name">Valor recebido:</span>
+        <span class="dr-val" style="color:var(--purple)">${fmt(comanda.valorRecebido || 0)}</span>
+      </div>
+      <div class="detail-row">
+        <span class="dr-name">Troco:</span>
+        <span class="dr-val">${fmt(comanda.troco || 0)}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px">Finalizada em: ${comanda.finalizadaEm}</div>
+    </div>`;
+  }
+
+  document.getElementById('detail-body').innerHTML = body;
+
+  const actions = document.getElementById('detail-actions');
+  if (comanda.status === 'ABERTA') {
+    actions.innerHTML = `
+      <button class="btn btn-purple btn-full" onclick="confirmFinalizar()">💳 Finalizar Venda</button>
+      <button class="btn btn-outline btn-full" onclick="back()">Voltar</button>`;
+  } else {
+    actions.innerHTML = `
+      <button class="btn btn-outline btn-full" onclick="back()">← Voltar</button>`;
+  }
 }
 
-// ════════════════════════════════════════════════════════════
-//  WhatsApp
-// ════════════════════════════════════════════════════════════
+function calcChange(el) {
+  const total    = parseFloat(el.dataset.total);
+  const received = parseFloat(el.value) || 0;
+  const row = document.getElementById('change-row');
+  const val = document.getElementById('change-val');
 
-function sendToWhatsApp() {
-  const nameInput = document.getElementById('buyer-name');
-  const nome = nameInput.value.trim();
-
-  // Valida nome
-  if (!nome) {
-    nameInput.classList.remove('shake');
-    void nameInput.offsetWidth;
-    nameInput.classList.add('shake');
-    setTimeout(() => nameInput.classList.remove('shake'), 400);
-    nameInput.focus();
-    toast('Informe o nome do comprador', '#E65100');
+  if (!received) {
+    row.className = 'change-row zero';
+    val.className = 'change-val zero';
+    val.textContent = '—';
     return;
   }
 
-  const mensagem = buildMessage(nome);
-  const url = `https://wa.me/${NUMERO_CAIXA}?text=${encodeURIComponent(mensagem)}`;
-
-  // Abre o WhatsApp
-  window.open(url, '_blank');
-
-  // Feedback e pergunta sobre nova venda
-  toast('Venda enviada ao caixa!', '#25D366');
-  setTimeout(() => document.getElementById('sent-dlg').classList.add('open'), 600);
+  const change = received - total;
+  if (change >= 0) {
+    row.className = 'change-row pos';
+    val.className = 'change-val pos';
+    val.textContent = fmt(change);
+  } else {
+    row.className = 'change-row neg';
+    val.className = 'change-val neg';
+    val.textContent = `− ${fmt(Math.abs(change))}`;
+  }
 }
 
-function buildMessage(nome) {
-  const active   = state.items.filter(i => i.qty > 0);
-  const { qty, val } = totals();
-  const hora     = horaAtual();
+// ═══════════════════════════════════════════════════════════
+//  Finalizar
+// ═══════════════════════════════════════════════════════════
 
-  const itensLinhas = active
-    .map(i => `${fmt(i.price)} x ${i.qty} = ${fmt(i.price * i.qty)}`)
-    .join('\n');
+function confirmFinalizar() {
+  const inp = document.getElementById('payment-input');
+  const received = parseFloat(inp.value) || 0;
 
-  return [
-    '🛒 *NOVA VENDA - BAZAR DOS JOVENS*',
-    '',
-    `👤 Cliente: ${nome}`,
-    '',
-    '📦 Itens:',
-    itensLinhas,
-    '',
-    `📊 Total de peças: ${qty}`,
-    '',
-    `💰 Total a pagar: ${fmt(val)}`,
-    '',
-    `⏰ Horário: ${hora}`,
-  ].join('\n');
+  if (received <= 0) {
+    shake(inp);
+    toast('Informe o valor recebido', '#E65100');
+    return;
+  }
+
+  const data    = load();
+  const comanda = data[currentNum];
+  const { val } = totals(comanda);
+  const change  = received - val;
+
+  const msgOk   = `Recebido: ${fmt(received)}\nTroco: ${fmt(Math.max(0, change))}`;
+  const msgWarn = `⚠️ Valor insuficiente\nFaltam: ${fmt(Math.abs(change))}\n\nFinalizar mesmo assim?`;
+
+  document.getElementById('dlg-confirm-body').textContent = change < 0 ? msgWarn : msgOk;
+  document.getElementById('dlg-confirm').classList.add('open');
 }
 
-// ════════════════════════════════════════════════════════════
-//  Helpers
-// ════════════════════════════════════════════════════════════
+function doFinalizar() {
+  const inp      = document.getElementById('payment-input');
+  const received = parseFloat(inp.value) || 0;
+  const data     = load();
+  const comanda  = data[currentNum];
+  const { val }  = totals(comanda);
 
-function closeDlg(id) {
-  document.getElementById(id).classList.remove('open');
+  comanda.status        = 'PAGO';
+  comanda.finalizadaEm  = now();
+  comanda.valorRecebido = received;
+  comanda.troco         = Math.max(0, received - val);
+
+  save(data);
+  closeDlg('dlg-confirm');
+  document.getElementById('dlg-ok').classList.add('open');
 }
 
-let toastTimer;
-function toast(msg, bg = '#333') {
-  const el = document.getElementById('toast');
-  el.textContent      = msg;
-  el.style.background = bg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+function afterFinalizar() {
+  closeDlg('dlg-ok');
+  back(); // volta para caixa, que chama renderCaixa() via ON_ENTER
 }
 
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  Init
-// ════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 
-renderList();
+renderSala(1);
+renderSala(2);
+updateBadge();
 </script>
 </body>
 </html>
