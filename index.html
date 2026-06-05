@@ -248,6 +248,16 @@
     .cc-total  { font-size: 22px; font-weight: 700; }
     .cc-footer { font-size: 12px; color: var(--muted); }
 
+    /* ── Botão excluir no card ────────────────────────────── */
+    .cc-delete-btn {
+      background: #FFEBEE; border: none; color: var(--red);
+      border-radius: 10px; padding: 5px 10px;
+      font-size: 16px; cursor: pointer;
+      transition: background .1s; line-height: 1;
+      user-select: none; -webkit-user-select: none;
+    }
+    .cc-delete-btn:active { background: #FFCDD2; transform: scale(.92); }
+
     .empty-state {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -289,7 +299,7 @@
     .tb-label { color: rgba(255,255,255,.8); font-size: 13px; font-weight: 600; }
     .tb-value { color: #fff; font-size: 26px; font-weight: 700; }
 
-    /* ── Pagamento ────────────────────────────────────────── */
+    /* ── Pagamento (modal dinheiro) ───────────────────────── */
     .payment-field { display: flex; flex-direction: column; gap: 7px; }
     .payment-field label {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -340,18 +350,65 @@
       padding: 28px 24px 20px; max-width: 340px; width: 100%;
       box-shadow: 0 12px 40px rgba(0,0,0,.22);
       animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
+      max-height: 92vh; overflow-y: auto;
     }
     @keyframes popIn { from { transform: scale(.88); opacity: 0; } }
 
     .d-icon  { font-size: 44px; text-align: center; margin-bottom: 10px; }
     .d-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 6px; }
-    .d-body  { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 20px; white-space: pre-wrap; }
+    .d-body  { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 16px; white-space: pre-wrap; }
     .d-actions { display: flex; gap: 10px; }
     .d-btn { flex: 1; padding: 13px; border: none; border-radius: 13px; font-size: 15px; font-weight: 600; cursor: pointer; }
     .d-btn:active { filter: brightness(.92); }
     .d-btn.cancel  { background: #F0F0F0; color: var(--text); }
     .d-btn.confirm { background: var(--purple); color: #fff; }
     .d-btn.ok      { background: var(--green);  color: #fff; }
+    .d-btn.del     { background: var(--red);    color: #fff; }
+
+    /* ── Grid de formas de pagamento ──────────────────────── */
+    .pay-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .pay-btn {
+      border: none; border-radius: 14px; padding: 18px 10px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      transition: transform .1s, filter .1s;
+      user-select: none; -webkit-user-select: none;
+    }
+    .pay-btn:active { transform: scale(.95); filter: brightness(.88); }
+    .pay-btn .pay-icon { font-size: 26px; line-height: 1; }
+    .pay-btn.pix      { background: #E3F2FD; color: #1565C0; }
+    .pay-btn.dinheiro { background: #E8F5E9; color: #2E7D32; }
+    .pay-btn.debito   { background: #F3E5F5; color: #6A1B9A; }
+    .pay-btn.credito  { background: #FFF3E0; color: #E65100; }
+
+    /* ── Loading ──────────────────────────────────────────── */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 200;
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    #loading-overlay.open { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid rgba(255,255,255,.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    .spinner-purple {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(106,27,154,.15);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #fff; font-size: 15px; font-weight: 500; }
 
     /* ── Toast ────────────────────────────────────────────── */
     #toast {
@@ -453,6 +510,7 @@
     <header class="app-header purple">
       <button class="back-btn" onclick="back()">&#8592;</button>
       <h1>Caixa</h1>
+      <button onclick="renderCaixa()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;padding:8px;cursor:pointer;line-height:1">🔄</button>
     </header>
     <div class="caixa-tabs">
       <button class="tab-btn active" id="tab-abertas"     onclick="setTab('abertas')">Abertas</button>
@@ -471,11 +529,60 @@
     <div class="detail-actions" id="detail-actions"></div>
   </div>
 
-  <!-- Dialog: Confirmar finalizar -->
+  <!-- Dialog: Forma de pagamento -->
+  <div class="overlay" id="dlg-payment">
+    <div class="dialog">
+      <div class="d-icon">💳</div>
+      <div class="d-title">Forma de Pagamento</div>
+      <div class="d-body" id="dlg-payment-total"></div>
+      <div class="pay-grid">
+        <button class="pay-btn pix"      onclick="selectPayment('PIX')">
+          <span class="pay-icon">📱</span>PIX
+        </button>
+        <button class="pay-btn dinheiro" onclick="selectPayment('DINHEIRO')">
+          <span class="pay-icon">💵</span>Dinheiro
+        </button>
+        <button class="pay-btn debito"   onclick="selectPayment('DÉBITO')">
+          <span class="pay-icon">💳</span>Débito
+        </button>
+        <button class="pay-btn credito"  onclick="selectPayment('CRÉDITO')">
+          <span class="pay-icon">💳</span>Crédito
+        </button>
+      </div>
+      <div class="d-actions">
+        <button class="d-btn cancel" onclick="closeDlg('dlg-payment')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog: Pagamento em dinheiro -->
+  <div class="overlay" id="dlg-cash">
+    <div class="dialog">
+      <div class="d-icon">💵</div>
+      <div class="d-title">Pagamento em Dinheiro</div>
+      <div class="d-body" id="dlg-cash-total"></div>
+      <div class="payment-field" style="margin-bottom:10px">
+        <label>Valor recebido (R$)</label>
+        <input class="payment-input" id="cash-input" type="number"
+               inputmode="decimal" min="0" step="0.01" placeholder="0,00"
+               oninput="calcCashChange(this)">
+      </div>
+      <div class="change-row zero" id="cash-change-row">
+        <span class="change-label">Troco</span>
+        <span class="change-val zero" id="cash-change-val">—</span>
+      </div>
+      <div class="d-actions" style="margin-top:14px">
+        <button class="d-btn cancel"  onclick="closeDlg('dlg-cash')">Cancelar</button>
+        <button class="d-btn confirm" onclick="confirmCash()">Finalizar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog: Confirmar pagamento em dinheiro -->
   <div class="overlay" id="dlg-confirm">
     <div class="dialog">
       <div class="d-icon">💳</div>
-      <div class="d-title">Finalizar venda?</div>
+      <div class="d-title">Confirmar venda?</div>
       <div class="d-body" id="dlg-confirm-body"></div>
       <div class="d-actions">
         <button class="d-btn cancel"  onclick="closeDlg('dlg-confirm')">Cancelar</button>
@@ -496,11 +603,63 @@
     </div>
   </div>
 
+  <!-- Dialog: Excluir comanda -->
+  <div class="overlay" id="dlg-delete">
+    <div class="dialog">
+      <div class="d-icon">🗑️</div>
+      <div class="d-title">Excluir comanda?</div>
+      <div class="d-body" id="dlg-delete-body"></div>
+      <div class="d-actions">
+        <button class="d-btn cancel" onclick="closeDlg('dlg-delete')">Cancelar</button>
+        <button class="d-btn del"    onclick="doDeleteComanda()">Excluir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Aguarde...</div>
+  </div>
+
   <div id="toast"></div>
 </div>
 
 <script>
 'use strict';
+
+// ═══════════════════════════════════════════════════════════
+//  ⚠️  COLE AQUI A URL DO SEU APPS SCRIPT APÓS PUBLICAR
+// ═══════════════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx36B333vywaVDdo_J7a7WS2uD-s9SUSL6GJ_Ms8XHOxampskH3vrjEvg0lX8KMcWsS/exec';
+
+// ═══════════════════════════════════════════════════════════
+//  API — comunicação com Google Apps Script
+// ═══════════════════════════════════════════════════════════
+
+let cachedComandas = {};
+
+async function apiCall(action, payload, silent) {
+  payload = payload || {};
+  silent  = silent  || false;
+  if (!silent) showLoading(true);
+  try {
+    const url = SCRIPT_URL
+      + '?action=' + encodeURIComponent(action)
+      + '&data='   + encodeURIComponent(JSON.stringify(payload));
+    const resp = await fetch(url, { redirect: 'follow' });
+    if (!resp.ok) throw new Error('Erro HTTP ' + resp.status);
+    const json = await resp.json();
+    if (json && json.error) throw new Error(json.error);
+    return json;
+  } finally {
+    if (!silent) showLoading(false);
+  }
+}
+
+function showLoading(show) {
+  document.getElementById('loading-overlay').classList.toggle('open', show);
+}
 
 // ═══════════════════════════════════════════════════════════
 //  Navegação
@@ -533,40 +692,30 @@ const ON_ENTER = {
 };
 
 // ═══════════════════════════════════════════════════════════
-//  localStorage
-// ═══════════════════════════════════════════════════════════
-
-const LS = 'bazar_comandas_v1';
-
-function load() {
-  try { return JSON.parse(localStorage.getItem(LS) || '{}'); }
-  catch { return {}; }
-}
-function save(d) { localStorage.setItem(LS, JSON.stringify(d)); }
-
-// ═══════════════════════════════════════════════════════════
 //  Utilitários
 // ═══════════════════════════════════════════════════════════
 
 const fmt  = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
-const fmtQ = n => n === 1 ? '1 peça' : `${n} peças`;
+const fmtQ = n => n === 1 ? '1 peça' : (n + ' peças');
 
 function now() {
   const d = new Date(), p = n => String(n).padStart(2,'0');
-  return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return p(d.getDate())+'/'+p(d.getMonth()+1)+'/'+d.getFullYear()+
+         ' '+p(d.getHours())+':'+p(d.getMinutes());
 }
 
 function totals(comanda) {
+  if (!comanda || !comanda.itens) return { qty: 0, val: 0 };
   return {
-    qty: comanda.itens.reduce((s,i) => s + i.quantidade, 0),
-    val: comanda.itens.reduce((s,i) => s + i.subtotal,   0),
+    qty: comanda.itens.reduce(function(s,i){ return s + i.quantidade; }, 0),
+    val: comanda.itens.reduce(function(s,i){ return s + i.subtotal;   }, 0),
   };
 }
 
 function aggregate(itens) {
   const m = {};
-  itens.forEach(i => {
-    const k = `${i.sala}|${i.preco}`;
+  itens.forEach(function(i) {
+    const k = i.sala + '|' + i.preco;
     if (!m[k]) m[k] = { sala: i.sala, preco: i.preco, quantidade: 0, subtotal: 0 };
     m[k].quantidade += i.quantidade;
     m[k].subtotal   += i.subtotal;
@@ -578,16 +727,17 @@ function shake(el) {
   el.classList.remove('error');
   void el.offsetWidth;
   el.classList.add('error');
-  setTimeout(() => el.classList.remove('error'), 400);
+  setTimeout(function(){ el.classList.remove('error'); }, 400);
 }
 
 let toastTimer;
-function toast(msg, bg = '#333') {
+function toast(msg, bg) {
+  bg = bg || '#333';
   const el = document.getElementById('toast');
   el.textContent = msg; el.style.background = bg;
   el.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  toastTimer = setTimeout(function(){ el.classList.remove('show'); }, 3000);
 }
 
 function closeDlg(id) { document.getElementById(id).classList.remove('open'); }
@@ -597,7 +747,7 @@ function closeDlg(id) { document.getElementById(id).classList.remove('open'); }
 // ═══════════════════════════════════════════════════════════
 
 function updateBadge() {
-  const n = Object.values(load()).filter(c => c.status === 'ABERTA').length;
+  const n = Object.values(cachedComandas).filter(function(c){ return c.status === 'ABERTA'; }).length;
   const b = document.getElementById('caixa-badge');
   b.textContent = n;
   b.classList.toggle('hidden', n === 0);
@@ -605,8 +755,8 @@ function updateBadge() {
 
 function goSala(n) {
   resetSala(n);
-  go(`sala${n}`);
-  setTimeout(() => document.getElementById(`s${n}-num`).focus(), 360);
+  go('sala' + n);
+  setTimeout(function(){ document.getElementById('s' + n + '-num').focus(); }, 360);
 }
 
 function goCaixa() { go('caixa'); }
@@ -620,28 +770,28 @@ const SALAS = {
   2: { label: 'Sala 2', prices: [10, 20, 30],  color: 'green', items: [] },
 };
 
-// Inicializa items
-[1, 2].forEach(n => {
-  SALAS[n].items = SALAS[n].prices.map(p => ({ p, q: 0 }));
+[1, 2].forEach(function(n) {
+  SALAS[n].items = SALAS[n].prices.map(function(p){ return { p: p, q: 0 }; });
 });
 
 function resetSala(n) {
-  SALAS[n].items.forEach(i => i.q = 0);
-  const el = document.getElementById(`s${n}-num`);
+  SALAS[n].items.forEach(function(i){ i.q = 0; });
+  const el = document.getElementById('s' + n + '-num');
   if (el) el.value = '';
   renderSala(n);
 }
 
 function renderSala(n) {
   const s = SALAS[n];
-  document.getElementById(`s${n}-items`).innerHTML = s.items.map((item, i) => `
-    <div class="item-row">
-      <span class="item-price ${s.color}">${fmt(item.p)}</span>
-      <button class="qty-btn dec" ontouchstart="" onclick="qty(${n},${i},-1)">−</button>
-      <span class="qty-value" id="s${n}q${i}">${item.q}</span>
-      <button class="qty-btn inc" ontouchstart="" onclick="qty(${n},${i},1)">+</button>
-      <span class="item-sub${item.q ? '' : ' zero'}" id="s${n}s${i}">${fmt(item.p * item.q)}</span>
-    </div>`).join('');
+  document.getElementById('s' + n + '-items').innerHTML = s.items.map(function(item, i) {
+    return '<div class="item-row">' +
+      '<span class="item-price ' + s.color + '">' + fmt(item.p) + '</span>' +
+      '<button class="qty-btn dec" ontouchstart="" onclick="qty(' + n + ',' + i + ',-1)">−</button>' +
+      '<span class="qty-value" id="s' + n + 'q' + i + '">' + item.q + '</span>' +
+      '<button class="qty-btn inc" ontouchstart="" onclick="qty(' + n + ',' + i + ',1)">+</button>' +
+      '<span class="item-sub' + (item.q ? '' : ' zero') + '" id="s' + n + 's' + i + '">' + fmt(item.p * item.q) + '</span>' +
+    '</div>';
+  }).join('');
   refreshBar(n);
 }
 
@@ -649,8 +799,8 @@ function qty(n, i, d) {
   const item = SALAS[n].items[i];
   item.q = Math.max(0, item.q + d);
 
-  const qEl = document.getElementById(`s${n}q${i}`);
-  const sEl = document.getElementById(`s${n}s${i}`);
+  const qEl = document.getElementById('s' + n + 'q' + i);
+  const sEl = document.getElementById('s' + n + 's' + i);
   qEl.textContent = item.q;
   sEl.textContent = fmt(item.p * item.q);
   sEl.className   = 'item-sub' + (item.q ? '' : ' zero');
@@ -658,49 +808,58 @@ function qty(n, i, d) {
   qEl.classList.remove('bump');
   void qEl.offsetWidth;
   qEl.classList.add('bump');
-  setTimeout(() => qEl.classList.remove('bump'), 150);
+  setTimeout(function(){ qEl.classList.remove('bump'); }, 150);
 
   refreshBar(n);
 }
 
 function refreshBar(n) {
   const s   = SALAS[n];
-  const qty = s.items.reduce((a, i) => a + i.q, 0);
-  const val = s.items.reduce((a, i) => a + i.p * i.q, 0);
-  document.getElementById(`s${n}-qty`).textContent = fmtQ(qty);
-  document.getElementById(`s${n}-val`).textContent = fmt(val);
+  const qty = s.items.reduce(function(a,i){ return a + i.q; }, 0);
+  const val = s.items.reduce(function(a,i){ return a + i.p * i.q; }, 0);
+  document.getElementById('s' + n + '-qty').textContent = fmtQ(qty);
+  document.getElementById('s' + n + '-val').textContent = fmt(val);
 }
 
-function addSala(n) {
+async function addSala(n) {
   const s   = SALAS[n];
-  const inp = document.getElementById(`s${n}-num`);
+  const inp = document.getElementById('s' + n + '-num');
   const num = inp.value.trim().toUpperCase();
-  const qty = s.items.reduce((a, i) => a + i.q, 0);
+  const qty = s.items.reduce(function(a,i){ return a + i.q; }, 0);
 
   if (!num) { shake(inp); toast('Informe o número da comanda', '#E65100'); return; }
   if (!qty) { toast('Adicione pelo menos 1 item', '#E65100'); return; }
 
-  const data = load();
+  const itens = s.items
+    .filter(function(i){ return i.q > 0; })
+    .map(function(i){ return { preco: i.p, quantidade: i.q, subtotal: i.p * i.q }; });
 
-  if (!data[num]) {
-    data[num] = { numero: num, status: 'ABERTA', criadaEm: now(),
-                  finalizadaEm: null, valorRecebido: null, troco: null, itens: [] };
-  } else if (data[num].status === 'PAGO') {
-    toast(`Comanda ${num} já foi finalizada`, '#C62828'); return;
+  try {
+    await apiCall('addItens', {
+      comanda:  num,
+      sala:     s.label,
+      itens:    itens,
+      dataHora: now()
+    });
+  } catch (err) {
+    const msg = err.message.toLowerCase().includes('finalizada')
+      ? 'Comanda ' + num + ' já foi finalizada'
+      : 'Erro ao salvar. Verifique a conexão.';
+    toast(msg, '#C62828');
+    return;
   }
 
-  s.items.filter(i => i.q > 0).forEach(i => {
-    data[num].itens.push({ sala: s.label, preco: i.p, quantidade: i.q, subtotal: i.p * i.q, criadoEm: now() });
-  });
-
-  save(data);
-  s.items.forEach(i => i.q = 0);
+  s.items.forEach(function(i){ i.q = 0; });
   renderSala(n);
-  updateBadge();
   inp.value = '';
   inp.focus();
   if (navigator.vibrate) navigator.vibrate(100);
   toast('✅ Itens adicionados com sucesso. Informe a próxima comanda.', '#2E7D32');
+
+  // Atualiza cache e badge em segundo plano
+  apiCall('getComandas', {}, true)
+    .then(function(d){ cachedComandas = d; updateBadge(); })
+    .catch(function(){});
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -713,58 +872,88 @@ function setTab(tab) {
   caixaTab = tab;
   document.getElementById('tab-abertas').classList.toggle('active', tab === 'abertas');
   document.getElementById('tab-finalizadas').classList.toggle('active', tab === 'finalizadas');
-  renderCaixa();
+  renderListFromCache();
 }
 
-function renderCaixa() {
-  const all      = Object.values(load());
-  const abertas  = all.filter(c => c.status === 'ABERTA')
-                      .sort((a, b) => a.numero.localeCompare(b.numero, undefined, {numeric: true}));
-  const pagas    = all.filter(c => c.status === 'PAGO')
-                      .sort((a, b) => (b.finalizadaEm || '').localeCompare(a.finalizadaEm || ''));
-
-  document.getElementById('tab-abertas').textContent     = `Abertas (${abertas.length})`;
-  document.getElementById('tab-finalizadas').textContent = `Finalizadas (${pagas.length})`;
-
+async function renderCaixa() {
   const list = document.getElementById('caixa-list');
-  const list_ = caixaTab === 'abertas' ? abertas : pagas;
 
-  if (list_.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="es-icon">${caixaTab === 'abertas' ? '📋' : '🎉'}</div>
-      <p>${caixaTab === 'abertas' ? 'Nenhuma comanda aberta' : 'Nenhuma venda finalizada'}</p>
-    </div>`;
+  // Mostra loading inline na lista
+  list.innerHTML = '<div class="empty-state" style="flex:1">' +
+    '<div class="spinner-purple"></div>' +
+    '<p style="margin-top:14px">Carregando comandas...</p>' +
+  '</div>';
+
+  try {
+    cachedComandas = await apiCall('getComandas', {}, true);
+  } catch (err) {
+    list.innerHTML = '<div class="empty-state">' +
+      '<div class="es-icon">⚠️</div>' +
+      '<p>Não foi possível carregar.<br>Verifique a conexão<br>e tente novamente.</p>' +
+      '<button class="btn btn-purple" onclick="renderCaixa()" style="width:100%;margin-top:4px">' +
+        '🔄 Tentar novamente</button>' +
+    '</div>';
     return;
   }
 
-  list.innerHTML = list_.map(c => {
-    const { qty, val } = totals(c);
+  updateBadge();
+  renderListFromCache();
+}
+
+function renderListFromCache() {
+  const all     = Object.values(cachedComandas);
+  const abertas = all.filter(function(c){ return c.status === 'ABERTA'; })
+                     .sort(function(a,b){ return a.numero.localeCompare(b.numero, undefined, {numeric: true}); });
+  const pagas   = all.filter(function(c){ return c.status === 'PAGO'; })
+                     .sort(function(a,b){ return (b.finalizadaEm||'').localeCompare(a.finalizadaEm||''); });
+
+  document.getElementById('tab-abertas').textContent     = 'Abertas (' + abertas.length + ')';
+  document.getElementById('tab-finalizadas').textContent = 'Finalizadas (' + pagas.length + ')';
+
+  const list  = document.getElementById('caixa-list');
+  const list_ = caixaTab === 'abertas' ? abertas : pagas;
+
+  if (list_.length === 0) {
+    list.innerHTML = '<div class="empty-state">' +
+      '<div class="es-icon">' + (caixaTab === 'abertas' ? '📋' : '🎉') + '</div>' +
+      '<p>' + (caixaTab === 'abertas' ? 'Nenhuma comanda aberta' : 'Nenhuma venda finalizada') + '</p>' +
+    '</div>';
+    return;
+  }
+
+  list.innerHTML = list_.map(function(c) {
+    const t = totals(c);
     if (c.status === 'ABERTA') {
-      return `<div class="comanda-card" onclick="openComanda('${c.numero}')">
-        <div class="cc-header">
-          <span class="cc-num">COMANDA ${c.numero}</span>
-          <span class="cc-badge aberta">ABERTA</span>
-        </div>
-        <div class="cc-info">
-          <span class="cc-pieces">${fmtQ(qty)}</span>
-          <span class="cc-total">${fmt(val)}</span>
-        </div>
-        <div class="cc-footer">Criada: ${c.criadaEm}</div>
-      </div>`;
+      return '<div class="comanda-card" onclick="openComanda(\'' + c.numero + '\')">' +
+        '<div class="cc-header">' +
+          '<span class="cc-num">COMANDA ' + c.numero + '</span>' +
+          '<div style="display:flex;align-items:center;gap:8px">' +
+            '<span class="cc-badge aberta">ABERTA</span>' +
+            '<button class="cc-delete-btn" onclick="event.stopPropagation();promptDeleteComanda(\'' + c.numero + '\')">🗑</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cc-info">' +
+          '<span class="cc-pieces">' + fmtQ(t.qty) + '</span>' +
+          '<span class="cc-total">' + fmt(t.val) + '</span>' +
+        '</div>' +
+        '<div class="cc-footer">Criada: ' + c.criadaEm + '</div>' +
+      '</div>';
     } else {
-      return `<div class="comanda-card" onclick="openComanda('${c.numero}')">
-        <div class="cc-header">
-          <span class="cc-num">COMANDA ${c.numero}</span>
-          <span class="cc-badge pago">✓ PAGO</span>
-        </div>
-        <div class="cc-info">
-          <span class="cc-pieces">${fmtQ(qty)}</span>
-          <span class="cc-total">${fmt(val)}</span>
-        </div>
-        <div class="cc-footer">
-          Recebido: ${fmt(c.valorRecebido || 0)} · Troco: ${fmt(c.troco || 0)} · ${c.finalizadaEm}
-        </div>
-      </div>`;
+      const fp         = c.formaPagamento || '—';
+      const extraDinhe = fp === 'DINHEIRO'
+        ? ' · Recebido: ' + fmt(c.valorRecebido || 0) + ' · Troco: ' + fmt(c.troco || 0)
+        : '';
+      return '<div class="comanda-card" onclick="openComanda(\'' + c.numero + '\')">' +
+        '<div class="cc-header">' +
+          '<span class="cc-num">COMANDA ' + c.numero + '</span>' +
+          '<span class="cc-badge pago">✓ PAGO</span>' +
+        '</div>' +
+        '<div class="cc-info">' +
+          '<span class="cc-pieces">' + fmtQ(t.qty) + '</span>' +
+          '<span class="cc-total">' + fmt(t.val) + '</span>' +
+        '</div>' +
+        '<div class="cc-footer">' + fp + extraDinhe + ' · ' + c.finalizadaEm + '</div>' +
+      '</div>';
     }
   }).join('');
 }
@@ -781,89 +970,131 @@ function openComanda(num) {
 }
 
 function renderDetail(num) {
-  const data    = load();
-  const comanda = data[num];
-  if (!comanda) return;
+  const comanda = cachedComandas[num];
+  if (!comanda) {
+    document.getElementById('detail-body').innerHTML =
+      '<div class="empty-state"><div class="es-icon">⚠️</div><p>Comanda não encontrada.</p></div>';
+    document.getElementById('detail-actions').innerHTML =
+      '<button class="btn btn-outline btn-full" onclick="back()">← Voltar</button>';
+    return;
+  }
 
-  const { qty, val } = totals(comanda);
+  const t   = totals(comanda);
   const agg = aggregate(comanda.itens);
 
-  document.getElementById('detail-title').textContent = `COMANDA ${num}`;
+  document.getElementById('detail-title').textContent = 'COMANDA ' + num;
 
-  // Agrupa por sala
   const bySala = {};
-  agg.forEach(i => { (bySala[i.sala] = bySala[i.sala] || []).push(i); });
+  agg.forEach(function(i){ (bySala[i.sala] = bySala[i.sala] || []).push(i); });
 
   let body = '<div class="section-card">';
 
-  ['Sala 1', 'Sala 2'].forEach(sala => {
+  ['Sala 1', 'Sala 2'].forEach(function(sala) {
     const itens = bySala[sala];
     if (!itens || !itens.length) return;
     const cls = sala === 'Sala 1' ? 'sala1' : 'sala2';
-    body += `<div class="section-label ${cls}">${sala}</div>`;
-    itens.forEach(i => {
-      body += `<div class="detail-row">
-        <span class="dr-name">${fmt(i.preco)} × ${i.quantidade}</span>
-        <span class="dr-val">${fmt(i.subtotal)}</span>
-      </div>`;
+    body += '<div class="section-label ' + cls + '">' + sala + '</div>';
+    itens.forEach(function(i) {
+      body += '<div class="detail-row">' +
+        '<span class="dr-name">' + fmt(i.preco) + ' × ' + i.quantidade + '</span>' +
+        '<span class="dr-val">' + fmt(i.subtotal) + '</span>' +
+      '</div>';
     });
     body += '<hr class="dashed">';
   });
 
-  body += `<div class="totals-row"><span>Total de peças:</span><strong>${qty}</strong></div>
-    <div class="total-box">
-      <span class="tb-label">TOTAL A PAGAR</span>
-      <span class="tb-value">${fmt(val)}</span>
-    </div>
-  </div>`;
+  body += '<div class="totals-row"><span>Total de peças:</span><strong>' + t.qty + '</strong></div>' +
+    '<div class="total-box">' +
+      '<span class="tb-label">TOTAL A PAGAR</span>' +
+      '<span class="tb-value">' + fmt(t.val) + '</span>' +
+    '</div>' +
+  '</div>';
 
-  if (comanda.status === 'ABERTA') {
-    body += `<div class="section-card">
-      <div class="section-label total">💳 Pagamento</div>
-      <div class="payment-field">
-        <label>Valor recebido (R$)</label>
-        <input class="payment-input" id="payment-input" type="number"
-               inputmode="decimal" min="0" step="0.01" placeholder="0,00"
-               data-total="${val}" oninput="calcChange(this)">
-      </div>
-      <div class="change-row zero" id="change-row">
-        <span class="change-label">Troco</span>
-        <span class="change-val zero" id="change-val">—</span>
-      </div>
-    </div>`;
-  } else {
-    body += `<div class="section-card">
-      <div class="section-label ok">✓ Venda Finalizada</div>
-      <div class="detail-row">
-        <span class="dr-name">Valor recebido:</span>
-        <span class="dr-val" style="color:var(--purple)">${fmt(comanda.valorRecebido || 0)}</span>
-      </div>
-      <div class="detail-row">
-        <span class="dr-name">Troco:</span>
-        <span class="dr-val">${fmt(comanda.troco || 0)}</span>
-      </div>
-      <div style="font-size:12px;color:var(--muted);margin-top:8px">Finalizada em: ${comanda.finalizadaEm}</div>
-    </div>`;
+  if (comanda.status !== 'ABERTA') {
+    const fp        = comanda.formaPagamento || '—';
+    const trocoHtml = fp === 'DINHEIRO'
+      ? '<div class="detail-row"><span class="dr-name">Troco:</span><span class="dr-val">' + fmt(comanda.troco || 0) + '</span></div>'
+      : '';
+    body += '<div class="section-card">' +
+      '<div class="section-label ok">✓ Venda Finalizada</div>' +
+      '<div class="detail-row">' +
+        '<span class="dr-name">Pagamento:</span>' +
+        '<span class="dr-val" style="color:var(--purple)">' + fp + '</span>' +
+      '</div>' +
+      '<div class="detail-row">' +
+        '<span class="dr-name">Valor recebido:</span>' +
+        '<span class="dr-val" style="color:var(--purple)">' + fmt(comanda.valorRecebido || 0) + '</span>' +
+      '</div>' + trocoHtml +
+      '<div style="font-size:12px;color:var(--muted);margin-top:8px">Finalizada em: ' + comanda.finalizadaEm + '</div>' +
+    '</div>';
   }
 
   document.getElementById('detail-body').innerHTML = body;
 
   const actions = document.getElementById('detail-actions');
   if (comanda.status === 'ABERTA') {
-    actions.innerHTML = `
-      <button class="btn btn-purple btn-full" onclick="confirmFinalizar()">💳 Finalizar Venda</button>
-      <button class="btn btn-outline btn-full" onclick="back()">Voltar</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-purple btn-full" onclick="confirmFinalizar()">💳 Finalizar Venda</button>' +
+      '<button class="btn btn-outline btn-full" onclick="back()">Voltar</button>';
   } else {
-    actions.innerHTML = `
-      <button class="btn btn-outline btn-full" onclick="back()">← Voltar</button>`;
+    actions.innerHTML =
+      '<button class="btn btn-outline btn-full" onclick="back()">← Voltar</button>';
   }
 }
 
-function calcChange(el) {
+// ═══════════════════════════════════════════════════════════
+//  Finalizar — fluxo por forma de pagamento
+// ═══════════════════════════════════════════════════════════
+
+function confirmFinalizar() {
+  const comanda = cachedComandas[currentNum];
+  if (!comanda) return;
+  const t = totals(comanda);
+  document.getElementById('dlg-payment-total').textContent = 'Total a pagar: ' + fmt(t.val);
+  document.getElementById('dlg-payment').classList.add('open');
+}
+
+async function selectPayment(forma) {
+  closeDlg('dlg-payment');
+
+  if (forma === 'DINHEIRO') {
+    const t   = totals(cachedComandas[currentNum]);
+    document.getElementById('dlg-cash-total').textContent = 'Total a pagar: ' + fmt(t.val);
+    const inp = document.getElementById('cash-input');
+    inp.value = '';
+    inp.dataset.total = t.val;
+    const row = document.getElementById('cash-change-row');
+    row.className = 'change-row zero';
+    document.getElementById('cash-change-val').className  = 'change-val zero';
+    document.getElementById('cash-change-val').textContent = '—';
+    document.getElementById('dlg-cash').classList.add('open');
+    setTimeout(function(){ inp.focus(); }, 120);
+    return;
+  }
+
+  // PIX, DÉBITO, CRÉDITO — finaliza direto
+  const comanda = cachedComandas[currentNum];
+  const t = totals(comanda);
+  try {
+    await apiCall('finalizarComanda', {
+      comanda:        currentNum,
+      formaPagamento: forma,
+      valorRecebido:  t.val,
+      troco:          0,
+      finalizadaEm:   now()
+    });
+  } catch (err) {
+    toast('Erro ao finalizar. Tente novamente.', '#C62828');
+    return;
+  }
+  document.getElementById('dlg-ok').classList.add('open');
+}
+
+function calcCashChange(el) {
   const total    = parseFloat(el.dataset.total);
   const received = parseFloat(el.value) || 0;
-  const row = document.getElementById('change-row');
-  const val = document.getElementById('change-val');
+  const row = document.getElementById('cash-change-row');
+  const val = document.getElementById('cash-change-val');
 
   if (!received) {
     row.className = 'change-row zero';
@@ -880,16 +1111,12 @@ function calcChange(el) {
   } else {
     row.className = 'change-row neg';
     val.className = 'change-val neg';
-    val.textContent = `− ${fmt(Math.abs(change))}`;
+    val.textContent = '− ' + fmt(Math.abs(change));
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-//  Finalizar
-// ═══════════════════════════════════════════════════════════
-
-function confirmFinalizar() {
-  const inp = document.getElementById('payment-input');
+function confirmCash() {
+  const inp      = document.getElementById('cash-input');
   const received = parseFloat(inp.value) || 0;
 
   if (received <= 0) {
@@ -898,38 +1125,79 @@ function confirmFinalizar() {
     return;
   }
 
-  const data    = load();
-  const comanda = data[currentNum];
-  const { val } = totals(comanda);
-  const change  = received - val;
-
-  const msgOk   = `Recebido: ${fmt(received)}\nTroco: ${fmt(Math.max(0, change))}`;
-  const msgWarn = `⚠️ Valor insuficiente\nFaltam: ${fmt(Math.abs(change))}\n\nFinalizar mesmo assim?`;
+  const t      = totals(cachedComandas[currentNum]);
+  const change = received - t.val;
+  const msgOk  = 'Recebido: ' + fmt(received) + '\nTroco: ' + fmt(Math.max(0, change));
+  const msgWarn= '⚠️ Valor insuficiente\nFaltam: ' + fmt(Math.abs(change)) + '\n\nFinalizar mesmo assim?';
 
   document.getElementById('dlg-confirm-body').textContent = change < 0 ? msgWarn : msgOk;
   document.getElementById('dlg-confirm').classList.add('open');
 }
 
-function doFinalizar() {
-  const inp      = document.getElementById('payment-input');
+async function doFinalizar() {
+  const inp      = document.getElementById('cash-input');
   const received = parseFloat(inp.value) || 0;
-  const data     = load();
-  const comanda  = data[currentNum];
-  const { val }  = totals(comanda);
+  const t        = totals(cachedComandas[currentNum]);
 
-  comanda.status        = 'PAGO';
-  comanda.finalizadaEm  = now();
-  comanda.valorRecebido = received;
-  comanda.troco         = Math.max(0, received - val);
+  try {
+    await apiCall('finalizarComanda', {
+      comanda:        currentNum,
+      formaPagamento: 'DINHEIRO',
+      valorRecebido:  received,
+      troco:          Math.max(0, received - t.val),
+      finalizadaEm:   now()
+    });
+  } catch (err) {
+    toast('Erro ao finalizar. Tente novamente.', '#C62828');
+    closeDlg('dlg-confirm');
+    closeDlg('dlg-cash');
+    return;
+  }
 
-  save(data);
   closeDlg('dlg-confirm');
+  closeDlg('dlg-cash');
   document.getElementById('dlg-ok').classList.add('open');
 }
 
-function afterFinalizar() {
+async function afterFinalizar() {
   closeDlg('dlg-ok');
-  back(); // volta para caixa, que chama renderCaixa() via ON_ENTER
+  // Recarrega dados antes de voltar para o caixa
+  try {
+    cachedComandas = await apiCall('getComandas', {}, true);
+  } catch(e) {}
+  back();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Excluir comanda
+// ═══════════════════════════════════════════════════════════
+
+let deleteNum = null;
+
+function promptDeleteComanda(num) {
+  deleteNum = num;
+  document.getElementById('dlg-delete-body').textContent =
+    'Tem certeza que deseja excluir a Comanda ' + num + '?\n\nEssa ação não pode ser desfeita.';
+  document.getElementById('dlg-delete').classList.add('open');
+}
+
+async function doDeleteComanda() {
+  const num = deleteNum;
+  closeDlg('dlg-delete');
+  deleteNum = null;
+
+  try {
+    await apiCall('excluirComanda', { comanda: num });
+  } catch (err) {
+    toast('Erro ao excluir. Tente novamente.', '#C62828');
+    return;
+  }
+
+  // Atualiza cache e re-renderiza
+  try { cachedComandas = await apiCall('getComandas', {}, true); } catch(e) {}
+  updateBadge();
+  renderListFromCache();
+  toast('Comanda ' + num + ' excluída com sucesso.', '#333');
 }
 
 // ═══════════════════════════════════════════════════════════
