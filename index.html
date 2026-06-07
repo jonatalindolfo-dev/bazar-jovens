@@ -136,6 +136,20 @@
     .comanda-input.error { border-color: var(--red); animation: shake .3s; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
 
+    .cliente-input {
+      width: 100%;
+      border: 2.5px solid #E0E0E0; border-radius: 14px;
+      padding: 12px 18px; font-size: 20px; font-weight: 600;
+      outline: none; font-family: inherit; color: var(--text);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+      box-shadow: var(--shadow);
+    }
+    .cliente-input::placeholder { font-size: 15px; font-weight: 400; color: #BDBDBD; }
+    .cliente-input.blue-focus:focus  { border-color: var(--blue);  box-shadow: 0 0 0 3px rgba(21,101,192,.12); }
+    .cliente-input.green-focus:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,125,50,.12); }
+    .cliente-input.error { border-color: var(--red); animation: shake .3s; }
+
     /* ── Lista de itens ───────────────────────────────────── */
     .item-list {
       flex: 1; overflow-y: auto; overflow-x: hidden;
@@ -246,7 +260,30 @@
     .cc-info   { display: flex; justify-content: space-between; align-items: center; }
     .cc-pieces { font-size: 13px; color: var(--muted); }
     .cc-total  { font-size: 22px; font-weight: 700; }
-    .cc-footer { font-size: 12px; color: var(--muted); }
+    .cc-footer  { font-size: 12px; color: var(--muted); }
+    .cc-cliente { font-size: 13px; color: var(--muted); font-weight: 500; }
+
+    /* ── Resumo financeiro ────────────────────────────────── */
+    .resumo-card {
+      background: #fff; border-radius: var(--radius);
+      padding: 18px 20px; box-shadow: var(--shadow);
+    }
+    .resumo-title {
+      font-size: 13px; font-weight: 800;
+      text-transform: uppercase; letter-spacing: .7px;
+      color: var(--purple); margin-bottom: 14px;
+    }
+    .resumo-subtitle {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .5px;
+      color: var(--muted); margin-bottom: 8px; margin-top: 4px;
+    }
+    .resumo-row       { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; }
+    .resumo-row.resumo-main { padding: 8px 0; }
+    .resumo-label     { font-size: 14px; color: var(--text); }
+    .resumo-val       { font-size: 14px; font-weight: 700; color: var(--green); }
+    .resumo-val.resumo-val-main { font-size: 22px; font-weight: 800; color: var(--purple); }
+    .resumo-divider   { border: none; border-top: 1px dashed #E0E0E0; margin: 10px 0; }
 
     /* ── Botão excluir no card ────────────────────────────── */
     .cc-delete-btn {
@@ -471,6 +508,11 @@
       <input class="comanda-input blue-focus" id="s1-num" type="text"
              inputmode="numeric" placeholder="Ex: 027" autocomplete="off">
     </div>
+    <div class="comanda-field" style="padding-top:8px">
+      <label>👤 Nome do Cliente</label>
+      <input class="cliente-input blue-focus" id="s1-cli" type="text"
+             inputmode="text" placeholder="Ex: Chico" autocomplete="off">
+    </div>
     <div class="item-list" id="s1-items"></div>
     <div class="total-bar blue">
       <span class="qty-txt" id="s1-qty">0 peças</span>
@@ -493,6 +535,11 @@
       <label>🎫 Número da Comanda</label>
       <input class="comanda-input green-focus" id="s2-num" type="text"
              inputmode="numeric" placeholder="Ex: 027" autocomplete="off">
+    </div>
+    <div class="comanda-field" style="padding-top:8px">
+      <label>👤 Nome do Cliente</label>
+      <input class="cliente-input green-focus" id="s2-cli" type="text"
+             inputmode="text" placeholder="Ex: Chico" autocomplete="off">
     </div>
     <div class="item-list" id="s2-items"></div>
     <div class="total-bar green">
@@ -742,6 +789,10 @@ function toast(msg, bg) {
 
 function closeDlg(id) { document.getElementById(id).classList.remove('open'); }
 
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ═══════════════════════════════════════════════════════════
 //  Home
 // ═══════════════════════════════════════════════════════════
@@ -776,8 +827,10 @@ const SALAS = {
 
 function resetSala(n) {
   SALAS[n].items.forEach(function(i){ i.q = 0; });
-  const el = document.getElementById('s' + n + '-num');
-  if (el) el.value = '';
+  const el  = document.getElementById('s' + n + '-num');
+  const cli = document.getElementById('s' + n + '-cli');
+  if (el)  el.value  = '';
+  if (cli) cli.value = '';
   renderSala(n);
 }
 
@@ -822,12 +875,15 @@ function refreshBar(n) {
 }
 
 async function addSala(n) {
-  const s   = SALAS[n];
-  const inp = document.getElementById('s' + n + '-num');
-  const num = inp.value.trim().toUpperCase();
-  const qty = s.items.reduce(function(a,i){ return a + i.q; }, 0);
+  const s    = SALAS[n];
+  const inp  = document.getElementById('s' + n + '-num');
+  const inpC = document.getElementById('s' + n + '-cli');
+  const num  = inp.value.trim().toUpperCase();
+  const cli  = inpC.value.trim();
+  const qty  = s.items.reduce(function(a,i){ return a + i.q; }, 0);
 
-  if (!num) { shake(inp); toast('Informe o número da comanda', '#E65100'); return; }
+  if (!num) { shake(inp);  toast('Informe o número da comanda', '#E65100'); return; }
+  if (!cli) { shake(inpC); toast('Informe o nome do cliente',   '#E65100'); return; }
   if (!qty) { toast('Adicione pelo menos 1 item', '#E65100'); return; }
 
   const itens = s.items
@@ -837,6 +893,7 @@ async function addSala(n) {
   try {
     await apiCall('addItens', {
       comanda:  num,
+      cliente:  cli,
       sala:     s.label,
       itens:    itens,
       dataHora: now()
@@ -851,7 +908,8 @@ async function addSala(n) {
 
   s.items.forEach(function(i){ i.q = 0; });
   renderSala(n);
-  inp.value = '';
+  inp.value  = '';
+  inpC.value = '';
   inp.focus();
   if (navigator.vibrate) navigator.vibrate(100);
   toast('✅ Itens adicionados com sucesso. Informe a próxima comanda.', '#2E7D32');
@@ -900,6 +958,45 @@ async function renderCaixa() {
   renderListFromCache();
 }
 
+function buildResumo(pagas) {
+  var formas  = ['PIX', 'CRÉDITO', 'DÉBITO', 'DINHEIRO'];
+  var byForma = { 'PIX': 0, 'CRÉDITO': 0, 'DÉBITO': 0, 'DINHEIRO': 0 };
+  var totalRecebido = 0;
+  var totalPecas    = 0;
+
+  pagas.forEach(function(c) {
+    var t  = totals(c);
+    totalRecebido += t.val;
+    totalPecas    += t.qty;
+    var fp = (c.formaPagamento || '').toUpperCase().trim();
+    if (Object.prototype.hasOwnProperty.call(byForma, fp)) byForma[fp] += t.val;
+  });
+
+  return '<div class="resumo-card">' +
+    '<div class="resumo-title">💰 RESUMO DO CAIXA</div>' +
+    '<div class="resumo-row resumo-main">' +
+      '<span class="resumo-label">Total recebido</span>' +
+      '<span class="resumo-val resumo-val-main">' + fmt(totalRecebido) + '</span>' +
+    '</div>' +
+    '<div class="resumo-row">' +
+      '<span class="resumo-label">Total de vendas</span>' +
+      '<span class="resumo-val">' + pagas.length + '</span>' +
+    '</div>' +
+    '<div class="resumo-row">' +
+      '<span class="resumo-label">Total de peças vendidas</span>' +
+      '<span class="resumo-val">' + totalPecas + '</span>' +
+    '</div>' +
+    '<div class="resumo-divider"></div>' +
+    '<div class="resumo-subtitle">Por forma de pagamento</div>' +
+    formas.map(function(f) {
+      return '<div class="resumo-row">' +
+        '<span class="resumo-label">' + f + '</span>' +
+        '<span class="resumo-val">' + fmt(byForma[f]) + '</span>' +
+      '</div>';
+    }).join('') +
+  '</div>';
+}
+
 function renderListFromCache() {
   const all     = Object.values(cachedComandas);
   const abertas = all.filter(function(c){ return c.status === 'ABERTA'; })
@@ -910,20 +1007,16 @@ function renderListFromCache() {
   document.getElementById('tab-abertas').textContent     = 'Abertas (' + abertas.length + ')';
   document.getElementById('tab-finalizadas').textContent = 'Finalizadas (' + pagas.length + ')';
 
-  const list  = document.getElementById('caixa-list');
-  const list_ = caixaTab === 'abertas' ? abertas : pagas;
+  const list = document.getElementById('caixa-list');
 
-  if (list_.length === 0) {
-    list.innerHTML = '<div class="empty-state">' +
-      '<div class="es-icon">' + (caixaTab === 'abertas' ? '📋' : '🎉') + '</div>' +
-      '<p>' + (caixaTab === 'abertas' ? 'Nenhuma comanda aberta' : 'Nenhuma venda finalizada') + '</p>' +
-    '</div>';
-    return;
-  }
-
-  list.innerHTML = list_.map(function(c) {
-    const t = totals(c);
-    if (c.status === 'ABERTA') {
+  // ── Aba Abertas ──
+  if (caixaTab === 'abertas') {
+    if (abertas.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="es-icon">📋</div><p>Nenhuma comanda aberta</p></div>';
+      return;
+    }
+    list.innerHTML = abertas.map(function(c) {
+      const t = totals(c);
       return '<div class="comanda-card" onclick="openComanda(\'' + c.numero + '\')">' +
         '<div class="cc-header">' +
           '<span class="cc-num">COMANDA ' + c.numero + '</span>' +
@@ -932,13 +1025,25 @@ function renderListFromCache() {
             '<button class="cc-delete-btn" onclick="event.stopPropagation();promptDeleteComanda(\'' + c.numero + '\')">🗑</button>' +
           '</div>' +
         '</div>' +
+        '<div class="cc-cliente">👤 ' + escHtml(c.cliente || 'Não informado') + '</div>' +
         '<div class="cc-info">' +
           '<span class="cc-pieces">' + fmtQ(t.qty) + '</span>' +
           '<span class="cc-total">' + fmt(t.val) + '</span>' +
         '</div>' +
         '<div class="cc-footer">Criada: ' + c.criadaEm + '</div>' +
       '</div>';
-    } else {
+    }).join('');
+    return;
+  }
+
+  // ── Aba Finalizadas ──
+  var html = buildResumo(pagas);
+
+  if (pagas.length === 0) {
+    html += '<div class="empty-state"><div class="es-icon">🎉</div><p>Nenhuma venda finalizada</p></div>';
+  } else {
+    html += pagas.map(function(c) {
+      const t          = totals(c);
       const fp         = c.formaPagamento || '—';
       const extraDinhe = fp === 'DINHEIRO'
         ? ' · Recebido: ' + fmt(c.valorRecebido || 0) + ' · Troco: ' + fmt(c.troco || 0)
@@ -948,14 +1053,17 @@ function renderListFromCache() {
           '<span class="cc-num">COMANDA ' + c.numero + '</span>' +
           '<span class="cc-badge pago">✓ PAGO</span>' +
         '</div>' +
+        '<div class="cc-cliente">👤 ' + escHtml(c.cliente || 'Não informado') + '</div>' +
         '<div class="cc-info">' +
           '<span class="cc-pieces">' + fmtQ(t.qty) + '</span>' +
           '<span class="cc-total">' + fmt(t.val) + '</span>' +
         '</div>' +
         '<div class="cc-footer">' + fp + extraDinhe + ' · ' + c.finalizadaEm + '</div>' +
       '</div>';
-    }
-  }).join('');
+    }).join('');
+  }
+
+  list.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -987,7 +1095,8 @@ function renderDetail(num) {
   const bySala = {};
   agg.forEach(function(i){ (bySala[i.sala] = bySala[i.sala] || []).push(i); });
 
-  let body = '<div class="section-card">';
+  const clienteHtml = '<div style="font-size:14px;color:var(--muted);font-weight:500;margin-bottom:14px">👤 ' + escHtml(comanda.cliente || 'Não informado') + '</div>';
+  let body = '<div class="section-card">' + clienteHtml;
 
   ['Sala 1', 'Sala 2'].forEach(function(sala) {
     const itens = bySala[sala];
